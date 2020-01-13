@@ -1,0 +1,25 @@
+#include<stdio.h>
+
+int insertSort(int arr[], int len)
+{
+	int i, j;
+	int key;
+	for(i =1 ; i<len; ++i)
+	{
+		key = arr[i]; //记录要插入的数字的值
+		j= i-1;
+		while(j>=0 && arr[j]>key){
+			arr[j+1] = arr[j];
+			j--;
+		}
+		arr[j+1] = key;
+	}
+}
+int main(void)
+{
+	int arr[5] = {10, 3, 2, 1, 8};
+	insertSort(arr, 5);
+	for(int i = 0; i<5; ++i)
+		printf("%d ", arr[i]);
+	return 0;
+}
