@@ -1,0 +1,38 @@
+//从小到大排序 
+#include <iostream> 
+#include <algorithm>
+using namespace std;
+
+int main(void){
+	int T;
+	cin>>T;
+	int arr[T] = {0};
+	for(int i = 0; i<T; ++i) {
+		cin>>arr[i];
+	}
+	sort(arr, arr+T);
+	for(int i = 0; i<T; ++i){
+		cout<<arr[i]<<endl;
+	}
+	return 0;
+}
+
+//从大到小排序 
+#include <iostream> 
+#include <algorithm>
+using namespace std;
+
+bool complare(int a, int b){
+	return a>b;
+}
+int main(void){
+	int arr[4] = {0};
+	for(int i = 0; i<4; ++i) {
+		cin>>arr[i];
+	}
+	sort(arr, arr+4, complare);
+	for(int i = 0; i<4; ++i){
+		cout<<arr[i]<<endl;
+	}
+	return 0;
+}
