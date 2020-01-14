@@ -1,0 +1,32 @@
+#include<stdio.h>
+
+int selectSort(int* arr, int len)
+{
+	int i,j;
+	int pos;
+	int val;
+	for(i = 0; i<len; ++i)
+	{
+		pos = i;//保证每次比较都是将第一个数字与其他数字作比较 
+		for(j = i+1; j<len; ++j)
+		{
+			if(arr[j]< arr[pos])
+			{
+				pos = j;
+			}				
+		}
+		//把最小数所在的位置和第i个数字的位置作交换 
+		val = arr[i];
+		arr[i] = arr[pos];	
+		arr[pos] = val;
+	}
+}
+
+int main(void)
+{
+	int arr[4] ={5, 3, 4, 1} ;
+	selectSort(arr, 4);
+	for(int i = 0; i<4; ++i)
+		printf("%d ", arr[i]);	
+	return 0;
+}
