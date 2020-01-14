@@ -1,0 +1,49 @@
+#include<stdio.h>
+//方法一：使用函数
+//函数1：只需要一个语句实现
+int f(int n){
+	return n==0 ? 1:n*f(n-1);
+}
+//函数2：常规递归做法
+int f(int n)
+{
+    if(0 == n)
+    	return 1;
+	else
+		return f(n-1)*n;
+}
+int main(void)
+{
+	int  n;
+	printf("请输入一个数：\n");
+	scanf("%d", &n);
+	
+	
+	printf("%d的阶乘是%d\n", n, f(n));
+	return 0;
+				
+}
+方法二：
+//用迭代法求阶乘 
+int main(void)
+{
+	int val, i;
+	int mult;
+	mult = 1;
+	
+	printf("请输入一个数字：\n");
+	printf("val = \n");
+	scanf("%d", &val);
+	
+	if(val == 0)
+	printf("0的阶乘是0\n");
+	else
+	{
+		for(i = 1; i <= val; ++i)
+		mult = mult*i;    //用for循环求val的阶乘 
+	
+		printf("%d的阶乘是%d\n", val, mult);
+	
+		return 0;
+	}
+}
