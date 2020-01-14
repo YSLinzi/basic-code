@@ -1,0 +1,23 @@
+//一个整数的二进制有多少个1
+#include <stdio.h>
+
+int f(int n)
+{
+	int count = 0;
+	while(n>0)
+	{
+		if((n&1) == 1)
+		{
+			count++;
+		}
+		n = n>>1;
+	}
+	return count;
+}
+int main(void) 
+{
+	int i;
+	scanf("%d", &i);
+	printf("%d", f(i));
+	return 0;	
+}
