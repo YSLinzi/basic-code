@@ -1,0 +1,38 @@
+//破译密码 只用一个大写字母和原文进行异或运算加密
+
+#include <iostream> 
+using namespace std;
+
+int main(void){
+	int T;
+	int i,  k; 
+	int a[10000];
+	char b[10000];//确定两个数组，一个存储输入数字，一个存储最终的密码 
+	while(cin>>T){
+		for(i = 0; i<T; ++i){
+			cin>>a[i];
+		}
+		//进行26个字母分别枚举 
+		for(i = 0; i<26; ++i){
+			int j = i+'A';
+			for( k = 0; k<T; ++k) {
+				b[k] = a[k]^j;
+				//只要有一个不符合就可以退出循环 
+				if(b[k]<'A'|| b[k]>'Z')
+					break;
+			}
+			//如果已经找到那个字母了，接下来可以不用判断 
+			if(k == T)
+				break;	
+		}
+		for(i = 0; i<T; ++i)
+			cout<<b[i];
+		cout<<endl;
+	}
+	return 0;
+}
+/*
+	输入 30
+		17 6 9 8 3 0 1 6 4 5 10 11 8 9 14 15 12 13 18 19 16 17 22 23 20 21 26 27 24 7
+	输出 SDKJABCDFGHIJKLMNOPQRSTUVWXYZE 
+*/
