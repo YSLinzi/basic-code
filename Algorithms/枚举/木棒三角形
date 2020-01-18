@@ -1,0 +1,36 @@
+//木棒三角形 挑选三根木棒组成三角形，把那个输出最大直角三角形的面积
+#include <iostream> 
+#include <iomanip>
+using namespace std;
+
+int main(void){
+	int T;
+	int arr[101];
+	//输入多组，每组包括两行，第一行是 n 根木棍，第二行是 n 根木棍的长度 
+	while(cin>>T){
+		for(int i = 0; i<T;++i){
+			cin>>arr[i];
+		}
+		double flag = -1;//作为判断是否能组成三角形的标志以及存储最终面积的大小 
+		//因为木棍的长度是从小到大，所以第一层循环枚举最短木棍的长度 
+		for(int i= 0; i<T; ++i){
+		//第二层 枚举第二长木棍的长度 
+			for(int j = i+1; j<T; ++j){
+			//第三层 枚举第三长木棍的长度 
+				for(int k = j+1; k<T; ++k){
+					//判断是否是直角三角形 
+					if(arr[i]*arr[i] + arr[j]*arr[j] == arr[k]*arr[k]){
+						//如果是直角三角形 
+						if(0.5*arr[i]*arr[j]>flag) 
+							flag = 0.5*arr[i]*arr[j];//因为有 0.5 所以flag才要用double 
+					}
+				}
+			}
+		}
+		if(flag == -1)
+			cout<<"My Good!"<<endl;
+		else
+			cout<<setiosflags(ios::fixed)<<setprecision(3)<<flag<<endl;
+	}
+		return 0;
+}
