@@ -1,0 +1,65 @@
+//石头剪刀布大赛 计算两位玩家的夺冠的平均概率 
+//平均概率 = W/(W+L)，其中W是每一个玩家获胜比赛的数量，L是输掉的比赛的数量 
+#include <iostream>
+#include <cmath> 
+#include <cstring>
+#include <iomanip>
+using namespace std;
+
+typedef struct game{
+	int win;
+	int fault;
+}Game;
+Game arr[105];//从1开始 
+int judge(char , char );
+int main(void){
+	int n = 0, k = 0, cases = 0;// n 个人，k 场比赛
+	while(cin>>n>>k){
+		cases++;
+		memset(arr, 0, sizeof(arr));
+		for(int i = 1; i<=k; ++i){
+			char first[10], second[10];//定义两位字符数组，存储两位玩家出的招数（剪刀，石头或者布）
+			int a, b;
+			cin>>a>>first>>b>>second;
+			int flag = judge(first[0], second[0]);
+			//计算第一个玩家赢的比赛 
+			if(flag>0){
+				arr[a].win++;
+				arr[b].fault++;
+			}
+			//计算第一个玩家输掉的比赛 
+			else if(flag<0){
+				arr[a].fault++;
+				arr[b].win++;
+			}	
+		}
+		if(cases>1)//要求每一个测试样例之间有一个空行 
+			cout<<endl;
+		for(int i = 1; i<=n; ++i){
+			if(arr[i].win + arr[i].fault == 0)// 如果一行输入为 0 的 话，则有 win == fault == 0 
+				cout<<"-";
+			else
+				cout<<setiosflags(ios::fixed)<<setprecision(3)<<(double)arr[i].win/(arr[i].win+arr[i].fault)<<endl;//四舍五入保留小数点后三位 
+		}
+	}
+	return 0;	
+}
+int judge(char a, char b){
+	int val = a-b;
+	int temp = fabs(val);
+	if(temp == 0)
+		return 0;
+	else if(temp == 3)
+		return val;
+	else
+		return -val;
+}
+/*
+	输入 2 4
+			1 rock 2 paper
+			1 scissors 2 paper
+			1 rock 2 rock
+			2 rock 1 scissors 
+	输出 0.333
+			0.667 
+*/
