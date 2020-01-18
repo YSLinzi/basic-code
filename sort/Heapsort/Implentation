@@ -1,0 +1,51 @@
+/*
+	空间复杂度无疑是 O(1)，因为并没有开辟额外的空间
+	时间复杂度分析 假设二叉堆总共有 n 个元素，那么下沉调整的最坏时间复杂度就等同于二叉堆的高度，也就是 O(logn)
+	堆排序的第一步将无序数组构建成二叉堆，需要进行 n/2 次循环 ，每次循环调用一次 downAdjust 方法，所以计算规模是 n/2*logn,时间复杂度是 O(nlogn)
+	第二步需要进行 n-1 次循环，每一次调用一次 downadjust ，所以计算规模是 (n-1)*logn,时间复杂度是 O(nlogn)
+	 两个步骤是并列关系，所以整体的时间复杂度是 O(nlogn) 
+
+*/
+#include <iostream> 
+using namespace std;
+
+int downAdjust(int arr[], int parentIndex, int len) ;
+int HeapSort(int arr[], int len);
+int main(void){
+	int arr[9] = {10,20,15,25,50,30,40,35,45};
+	HeapSort(arr, 9);
+	for(int j = 0; j<9; ++j)
+		cout<<arr[j]<<' ';
+	return 0;
+}
+//下沉
+int downAdjust(int arr[], int parentIndex, int len) {
+	int temp = arr[parentIndex];
+	int childIndex = 2*parentIndex + 1;
+	while(childIndex < len){
+		//如果有右孩子， 并且右孩子大于左孩子的值，则定位到右孩子
+		if (childIndex+1<len && arr[childIndex+1] > arr[childIndex])
+			childIndex ++; 
+		//如果父节点大于其中任何一个节点的值，直接跳出 
+		if(temp >= arr[childIndex])
+			break;
+		arr[parentIndex] = arr[childIndex];
+		parentIndex = childIndex;
+		childIndex = childIndex*2 + 1;
+	}
+	arr[parentIndex] = temp;
+}
+//堆排序
+int HeapSort(int arr[], int len) {
+	//构建二叉堆， 从最后一个非叶子节点开始 
+	for(int i = (len-2)/2; i>=0; --i ){
+		downAdjust(arr, i, len);
+	}
+	//循环删除堆顶元素，移到二叉堆的尾部，调节堆产生新的堆顶
+	 for(int i = len-1; i>0; i--){
+	 	int temp = arr[i];
+	 	arr[i] = arr[0];
+	 	arr[0] = temp;
+	 	downAdjust(arr, 0, i);
+	 } 
+}
