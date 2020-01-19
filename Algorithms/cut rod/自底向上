@@ -1,0 +1,22 @@
+#include <iostream>
+using namespace std;
+ 
+int bottom_up_cut_rod(int len, int prices[]){
+	int dp[len+1];
+	dp[0] = 0;//将 dp[0]=0,因为长度为 0 的钢条没有收益 
+	for(int j = 1; j<=len; ++j){
+		int Max = INT_MIN;
+		for(int i=1; i<=j; ++i){
+			Max = max(Max, prices[i-1]+dp[j-i]);//求解每个规模为j的子问题，直接访问数组元素r[j-i]来获取规模为j-i的子问题的解，而不必进行递归调用 
+		}
+		dp[j] = Max;
+	}
+	return dp[len];
+}
+int main(void){
+	int prices[10] = {1,5, 8, 9, 10,17,17, 20, 24, 30};
+	for(int i=1; i<=10; ++i){
+		printf("长度为+%d+的最大收益为:%d\n", i, bottom_up_cut_rod(i, prices));
+	}
+	return 0;
+} 
