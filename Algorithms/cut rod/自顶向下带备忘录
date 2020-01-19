@@ -1,0 +1,33 @@
+#include <iostream>
+#include <cstring>
+using namespace std;
+//自顶向下带备忘录的方法
+int Main_cut_rod_aux(int len, int dp[], int prices[]){
+	if(dp[len]>=0)
+		return dp[len];
+	int Max;
+	if(len==0)
+		Max = 0;
+	else{
+		Max = INT_MIN;
+		for(int i = 1;i<=len; ++i){
+			Max = max(Max, prices[i-1]+Main_cut_rod_aux(len-i,dp, prices));
+		}
+	}
+	dp[len] = Max;
+	return Max;
+}
+int Main_cut_rod(int len, int prices[]){
+	int dp[len+1];
+	for(int i = 0; i<= len; ++i){
+		dp[i] = INT_MIN;
+	}
+	return Main_cut_rod_aux(len,dp,prices);
+}
+int main(void){
+ 	int prices[10] = {1,5, 8, 9, 10,17,17, 20, 24, 30};
+ 	for(int i = 1; i<=10; ++i){
+ 		printf("长度为+%d+的最大收益为:%d\n", i, Main_cut_rod(i, prices));
+	 }
+ 	return 0;
+}
