@@ -1,0 +1,45 @@
+//带切割成本的版本 
+#include <iostream>
+using namespace std;
+
+int r[10010];//用 r 数组存储子问题的解 
+int s[10010];//用 s 数组表示最优的切割方案 
+int extended_bottom_up_cut_rod(int len,int prices[], int c){
+	for(int i = 0; i<=len; ++i){
+		r[i] = 0;
+	}
+	for(int j = 1; j<=len; ++j){
+		int Max = INT_MIN;
+		for(int i = 1; i<= j; i++){
+			if(Max< prices[i-1]+r[j-i]-c*(j!=i)){
+				Max = prices[i-1]+r[j-i]-c*(j!=i);
+				s[j] = i;//把最大收益切割的第一段钢条的长度就保存在数组 s 当中 
+			}
+		}
+		r[j] = Max;
+	}
+	return r[len];
+}
+int print_cut(int len, int prices[], int s[]){
+	while(len>0){
+		cout<<s[len]<<' ';
+		len = len-s[len];
+	}
+	cout<<endl;
+}
+int main(void){
+	int prices[10] = {1,5, 8, 9, 10,17,17, 20, 24, 30};
+	int num, c;
+	cout<<"请输入切割钢条的成本："<<endl;
+	cin>>c; 
+	cout<<"请输入钢条的长度："<<endl;
+	
+	while(cin>>num){
+		cout<<"最大收益是："<<extended_bottom_up_cut_rod(num,prices, c)<<endl;
+		cout<<"切割方案是： "<<endl;
+		print_cut(num, prices,s);
+		cout<<endl;
+		cout<<"请输入钢条长度： "<<endl; 
+	}
+	return 0;
+}
