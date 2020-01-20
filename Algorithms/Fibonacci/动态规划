@@ -1,0 +1,28 @@
+/*
+  采取自下而上的方法，从2到n 迭代，每一次迭代只需要用到前两个元素，即第i-1 和第 i-2 个元素，因此仅需要用到两个变量 a 和 b 来存储第i-1 和第 i-2 个元素，
+  并且每一次迭代更新着两个元素，而无需保存从0到 n 每一个元素，故时间复杂度为 O(n)
+  
+*/
+#include <iostream>
+using namespace std;
+
+int fib(int n){
+	int result;
+	if(n<2)
+		return 1;
+	else{
+		int a = 1;
+		int b = 1;
+		for(int i = 2; i<=n; ++i){
+			result = a+b;
+			b = a;
+			a = result;
+		}
+	}
+	return result;
+}
+int main(void){
+	int num; 
+	cin>>num;
+	cout<<fib(num)<<endl;
+}
