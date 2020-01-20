@@ -1,0 +1,31 @@
+/*
+求解F(n),必须先计算F(n-1)和F(n-2),计算F(n-1)和F(n-2)，又必须先计算F(n-3)和F(n-4),以此类推，直至计算F(1)和F(0)，
+然后逆推得到F(n-1)和F(n-2)，才能得到F(n)，算法的时间复杂度随着N的增大呈现指数增长，时间的复杂度为O(2^n)，即2的n次方
+*/
+#include<stdio.h> 
+#include<time.h> 
+
+int Fib(int);
+int main()
+{
+  int n;
+	clock_t start, stop;
+	double duration;
+	scanf("%d", &n);
+  //测试用递归实现所需要的时间 
+    start = clock();
+    printf("The result is %d\n",Fib(n));
+    stop = clock();
+    
+    duration = (double)(stop-start)/CLOCKS_PER_SEC;
+    printf("用递归所需要的时间是：%f seconds\n",duration);
+    return 0;
+}
+int Fib(int n){
+	if(n==0||n<0)
+		return 0;
+	else if(n == 1)
+		return 1;
+	else
+		return Fib(n-2)+Fib(n-1);
+}
