@@ -1,0 +1,42 @@
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+char a[1001], b[1001];
+int dp[1001][1001],len1, len2;
+void long_common_squence(){
+	for(int i = 1; i<=len1; ++i){
+		for(int j = 1; j<=len2; ++j){
+			if(a[i-1] == b[j-1])
+				dp[i][j] = dp[i-1][j-1] + 1;
+			else 
+				dp[i][j] = max(dp[i][j-1], dp[i-1][j]);
+		}
+	}
+}
+int main(void){
+	while(cin>>a){
+		cin>>b;
+		memset(dp, 0, sizeof(dp));
+		len1 = strlen(a);
+		len2 = strlen(b);
+		long_common_squence();
+		//输出最长公共序列的长度 
+		cout<<dp[len1][len2]<<endl;
+		//打印 dp 表
+		cout<<"   ";
+		for(int i = 1; i<= len1; ++i)
+			cout<<' '<<b[i-1];
+		cout<<endl;
+		for(int i= 0; i<= len1; ++i){
+			if(i != 0)
+				cout<<a[i-1]<<' ';
+			else
+				cout<<"  ";
+			for(int j = 0; j<= len2; ++j)
+				cout<<dp[i][j]<<' ';
+			cout<<endl;
+		}
+	}
+	return 0;
+}
