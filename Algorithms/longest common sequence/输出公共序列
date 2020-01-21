@@ -1,0 +1,49 @@
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+char a[1001], b[1001];
+int dp[1001][1001], len1, len2;
+void long_common_subsequence(int i, int j){
+	for(i = 1; i<=len1; ++i){
+		for(j = 1; j<= len2; ++j){
+			if(a[i-1] == b[j-1])
+				dp[i][j] = dp[i-1][j-1] + 1;
+			else
+				dp[i][j] = max(dp[i][j-1], dp[i-1][j]);
+		}
+	}
+}
+void print_lcs(){
+	int i, j, z = 0;
+	char c[1001];
+	memset(c, 0, sizeof(c));
+	i = len1, j = len2;
+	while(i != 0 && j != 0){
+		if(a[i-1]== b[j-1]){
+			i--;
+			c[z] = a[i];
+			z++;
+			j--;
+		}
+		else if(dp[i-1][j]<dp[i][j-1])
+			j--;
+		else if(dp[i][j-1]<= dp[i-1][j])
+			i--;
+	}
+	for(i = z-1; i>= 0; i--)
+		cout<<c[i];
+	cout<<endl;
+}
+int main(void){
+	while(cin>>a){
+		cin>>b;
+		memset(dp, 0, sizeof(dp));
+		len1 = strlen(a);
+		len2 = strlen(b);
+		//输出最长公共序列的长度 
+		long_common_subsequence(len1, len2);
+		print_lcs();
+	}
+	return 0;
+}
