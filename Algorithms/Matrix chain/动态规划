@@ -1,0 +1,74 @@
+#include <iostream>
+using namespace std;
+/*使用一个长度为n+1的一维数组p来记录每个矩阵的规模，其中n为矩阵下标i的范围1~n，例如对于矩阵Ai而言，它的规模应该是p[i-1]到p[i]。
+  由于i是从1到n取值，所以数组p的下标是从0到n 
+*/
+//p为矩阵链，p[0],p[1]代表第一个矩阵的行数和列数，p[1],p[2]代表第二个矩阵的行数和列数
+void matrix_chain_order(int p[], int len, int** m, int** s){
+	int n = len-1;
+	//将对角线上的元素赋值为0，m[i][i]只有一个矩阵，所以相乘次数为0 
+	for(int i = 1; i<=n; ++i){
+		m[i][i] = 0;
+	}
+	//L表示矩阵链的长度
+    // L=2时，计算 m[i,i+1],i=1,2,...,n-1 (长度L=2的链的最小代价)
+	for(int L = 2;L<= n; L++) {
+		//从第一个矩阵开始算起 
+		for(int i = 1; i<=n-L+1; i++){
+			int j = i+L-1;//以i为起始位置，j为长度为 L 的链的末位
+			m[i][j] = INT_MAX;
+		//对于每个特定的i和j的组合，遍历此时所有的合适切割点k值
+			for(int k = i; k<j; ++k){
+		//k从 i 到 j-1, 以k 为位置划分 
+				int q = m[i][k] + m[k+1][j] +p[i-1]*p[k]*p[j];
+				if(q<m[i][j]){
+					m[i][j] = q;
+					s[i][j] = k;
+				}
+			}
+		}	
+	}
+}
+void print_optimal_parens(int** s, int i, int j){
+	if(i == j){
+		cout<<"A";
+	}
+	else{
+		cout<<"(";
+		print_optimal_parens(s, i, s[i][j]);
+		print_optimal_parens(s, s[i][j]+1, j);
+		cout<<")";
+	}
+}
+int main(void){
+	int p[7] = {30, 35, 15, 5, 10, 20, 25};
+	int **m,**s;
+	m = new int*[7];
+	s = new int*[7];
+	for(int i = 1; i<7; ++i){
+		m[i] = new int[7];
+		s[i] = new int[7];
+	}
+	for(int i = 1; i<7; ++i){
+		for(int j = 1; j<7; ++j){
+			m[i][j] = 0;
+			s[i][j] = 0;
+		}
+	}
+	matrix_chain_order(p, 7, m, s);
+	cout<<"最少次数为："<<m[1][6]<<endl;
+	cout<<"***** M *****"<<endl;
+	for(int i = 1; i<7; ++i){
+		for(int j = 1; j<7; ++j)
+			cout<<m[i][j]<<ends;
+		cout<<endl;
+	}
+	cout<<"***** S *****"<<endl;
+	for(int i = 1; i<7; ++i){
+		for(int j = 1; j<7; ++j)
+			cout<<s[i][j]<<ends;
+		cout<<endl;
+	}
+	print_optimal_parens(s, 1, 6);
+	return 0;
+}
