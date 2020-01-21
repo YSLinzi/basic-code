@@ -1,0 +1,30 @@
+/*
+	Common Subsequence（递归版本求LCS长度）
+*/
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+char a[1001], b[1001];
+int dp[1001][1001],len1, len2;
+int long_common_subsequence(int i, int j){
+	int result = 0;
+	if(i == -1 || j == -1)
+		return 0;
+	if(a[i] == b[j])
+		result = long_common_subsequence(i-1, j-1) + 1;
+	else
+		result = max(long_common_subsequence(i, j-1), long_common_subsequence(i-1, j));
+	return result;
+}
+int main(void){
+	while(cin>>a){
+		cin>>b;
+		memset(dp, 0, sizeof(dp));
+		len1 = strlen(a)-1;
+		len2 = strlen(b)-1;
+		//输出最长公共序列的长度 
+		cout<<long_common_subsequence(len1, len2)<<endl;
+	}
+	return 0;
+}
