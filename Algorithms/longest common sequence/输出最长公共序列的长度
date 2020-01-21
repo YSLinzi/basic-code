@@ -1,3 +1,6 @@
+/*
+	Common Subsequence（求LCS长度）
+*/
 #include <iostream>
 #include <cstring>
 using namespace std;
