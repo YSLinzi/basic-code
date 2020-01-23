@@ -1,0 +1,41 @@
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+struct item{
+	int weight;//物品的重量 
+	int value;//物品的价值 
+	float bi;//物品单位重量的价值 
+	float rate;//放入多少， 1 表示完整放入， 小于 1 表示被切割后放入 
+}items[100];
+bool complare(struct item a, struct item b){
+	return a.bi >b.bi;
+}
+int main(void) {
+	int n;
+	float c;//背包的容量 c
+	cin>>n>>c;//输入物品的件数和背包的容量
+	for(int i = 0; i<n; ++i){
+		cin>>items[i].value>>items[i].weight;//依次输入每件物品的价值和重量
+		items[i].bi = items[i].value/items[i].weight;//计算单位重量价值 
+		items[i].rate = 0;
+	}
+	sort(items, items+n, complare);//从大到小排序 
+	int sum= 0, j = 0;
+	for(j = 0; j<n; ++j){
+		if(items[j].weight<=c){
+			items[j].rate = 1;
+			sum += items[j].weight;
+			c -= items[j].weight;
+			cout<<"重："<<items[j].weight<<",价值："<<items[j].value<<"的物品被放入背包"<<endl<<"放入比例："<<items[j].rate<<endl; 
+		}
+		else
+			break;
+	}
+	if(j<n){
+		items[j].rate = c/items[j].weight;
+		sum += items[j].weight *items[j].rate;
+		cout<<"重："<<items[j].weight<<"、价值："<<items[j].value<<"被放入了背包"<<endl<<"放入比例："<<items[j].rate<<endl;
+	}
+	return 0;
+}
