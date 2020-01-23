@@ -1,0 +1,38 @@
+//完全背包问题--与01背包不同的地方：每种物品的数量是无限多的
+#include <iostream> 
+using namespace std;
+
+int w[1001], v[1001];//w 数组存储物品的重量， v 数组存储物品的价值 
+int f[1001][1001];
+int m, n;
+
+void findMax(){
+	for(int i = 1; i<= n; ++i){
+  //注意区分01背包第二重循环是j = m; j>0; --j 即是从右到左更新，为了保证每件物品只选一次，保证在考虑“选入第i件物品”这件策略时，依据的是一个绝不可能选入
+  //第i种物品的子结果f[i][j-w[i]]。
+		for(int j = 1; j<= m; ++j){
+			if(w[i]<= j)
+				f[i][j] = max(f[i-1][j], f[i][j-w[i]]+v[i]);//状态转移方程
+			else
+				f[i][j] = f[i-1][j];
+		}
+	} 
+}
+void print(){
+	for(int i=0; i<= n; ++i){
+		for(int j = 0; j<= m; ++j){
+			cout<<f[i][j]<<' ';
+		}
+		cout<<endl;
+	}
+}
+int main(void){
+	cin>>m>>n;//m 表示所能容纳的总重量， n 表示物品的数量 
+	for(int i = 1; i<= n; ++i){
+		cin>>w[i]>>v[i];
+	}
+	findMax();
+	cout<<"最大容量为："<<f[n][m]<<endl;
+	print();
+	return 0;
+}
