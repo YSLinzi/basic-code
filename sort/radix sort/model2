@@ -1,0 +1,51 @@
+//基数排序 
+#include <iostream>
+using namespace std;
+//获取最大位数 
+int maxbit(int arr[], int len){
+	int bit = 1;
+	int p = 10;
+	for(int i = 0; i<len; ++i){
+		while(arr[i]>=p){
+			p = p*10;
+			++bit;
+		}
+	}
+	return bit;
+}
+void radixSort(int arr[], int len){
+	int bit = maxbit(arr, len);
+	for(int i = 1; i<= bit*10; i= i*10){
+		int tmp[20][10];//建立一个20行10列的数组，每一列分别表示0~9位数，20行代表最多能存放的总个数
+		//用循环对数组进行初始化，因为如果初始化为 0，当比较的数中含有 0 时会出错，因此将 tmp 数组中的元素初始化 INT_MIN 
+		for(int k = 0;k<20; ++k){
+			for(int j = 0; j<10; ++j){
+				tmp[k][j] = INT_MIN;
+			}
+		}
+		for(int j = 0; j<len; ++j){
+			int n = (arr[j]/i)%10;
+			tmp[j][n] = arr[j];
+		} 
+		int k = 0;
+	//从下往上出桶的过程 ,对数组进行重排 
+		for(int p = 0; p<10; p++){
+			for(int q = 0; q<len; q++){
+				if(tmp[q][p] != INT_MIN)
+					arr[k++] = tmp[q][p]; 
+			}
+		}
+	}
+}
+int main(void){
+	int n;//数组的个数
+	cin>>n;
+	int arr[n];
+	for(int i = 0; i<n; ++i){
+		cin>>arr[i];//输入排序的数字
+	}
+	radixSort(arr, n);
+	for(int i = 0; i<n; ++i)
+		cout<<arr[i]<<' ';
+	return 0;
+}
