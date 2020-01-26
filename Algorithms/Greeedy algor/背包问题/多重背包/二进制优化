@@ -1,0 +1,28 @@
+//二进制优化  将每种物品的数量按照二进制数分解，然后对一整块物品进行选与不选的选择 
+#include <iostream>
+using namespace std;
+
+int N,V;
+int num[101] = {0}, vul[101] = {0}, w[101] = {0};
+int F[1001] = {0};
+int main(void){
+	cin>>N>>V;
+	for(int i = 1; i<=N; ++i){
+		cin>>vul[i]>>w[i]>>num[i];
+	}
+	for(int i = 1; i<= N; ++i){
+		for(int k = 1; num[i]; k = k*2){
+			if(num[i]<k)
+				k = num[i];
+			num[i] = num[i]-k;
+			int colum = k*vul[i];
+			int value = k*w[i];
+			
+			for(int v = V; v>=colum; --v){
+				F[v] = max(F[v], F[v-colum] + value);
+			}
+		}
+	}
+	cout<<F[V]<<endl;
+	return 0;
+}
