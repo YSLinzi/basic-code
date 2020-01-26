@@ -1,0 +1,60 @@
+//基数排序（包含计数排序的一种写法） 
+#include <iostream>
+using namespace std;
+
+int getMax(int arr[], int len){
+	int Max = arr[0];
+	for(int i = 0; i<len; ++i)
+		if(arr[i]>Max)
+			Max = arr[i];
+	return Max;
+}
+int getMin(int arr[], int len){
+	int Min = arr[0];
+	for(int i = 0; i<len; ++i){
+		if(arr[i]<Min)
+			Min = arr[i];
+	}
+	return Min;
+}
+void Sort(int arr[], int len, int digit){
+	int *result = new int[len];
+	int tmp[10] = {0};
+	//计数排序
+	for(int i = 0; i<len; ++i) {
+		tmp[(arr[i]/digit)%10]++;//统计个位数相同的数字的个数，十位数、百位数等以此类推 
+	}
+	for(int i = 1; i<10; ++i)
+		tmp[i] += tmp[i-1];//调整 tmp 数组
+	for(int i = len-1; i>=0; --i) {
+		int k = (arr[i]/digit)%10;
+		result[tmp[k]-1] = arr[i];
+		tmp[k]--;
+	}
+	//将重排后的结果重新赋值给原来的数组 
+	for(int i = 0; i<len; ++i)
+		arr[i] = result[i];
+}
+//基数排序
+void RadixSort(int arr[], int len) {
+	int Max = getMax(arr, len);//获取数组中最大的元素 
+	int Min = getMin(arr, len);//获取数组中最小的元素 
+	
+	for(int i = 0; i<len; ++i){
+		arr[i] = arr[i]-Min;//处理数组中存在负数的问题 
+	}
+	for(int digit = 1; Max/digit>0; digit = digit*10){
+		Sort(arr, len, digit);
+	}
+	for(int i= 0; i<len; ++i)
+		arr[i] += Min;//将数组元素还原 
+}
+int main(void){
+	int arr[10] = {50, -3, 503, 0, 32, 1001, 9, 65, 7, 43};
+	int len = sizeof(arr)/sizeof(arr[0]);
+	RadixSort(arr, len);
+	for(int i = 0; i<len; ++i)
+		cout<<arr[i]<<' ';
+	cout<<endl;
+	return 0;
+}
