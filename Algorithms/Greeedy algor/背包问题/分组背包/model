@@ -1,0 +1,28 @@
+//分组背包问题 
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+int dp[1001], a[1001][1001];
+int w[1001],c[1001], p;//w存储体积， c 存储每种物品的价值， p 指的是物品的组数
+
+int main(void){
+	memset(dp, 0, sizeof(dp));
+	memset(a, 0, sizeof(a));
+	int V, N, T;//V为背包容量， N为物品数量， T为物品组数
+	cin>>V>>N>>T;
+	for(int i = 1; i<= N; ++i){
+		cin>>w[i]>>c[i]>>p;
+		a[p][++a[p][0]] = i;// 把这个物品的数量存储在第 p 组的 a[p][0]位置中 
+	}
+	for(int i = 1; i<= T; ++i){//组的枚举 
+		for(int j = V; j>= 0; --j){//枚举背包的容量 
+			for(int k = 1; k<=a[i][0]; k++){//枚举该组的成员 
+				if(j>= w[a[i][k]])
+					dp[j] = max(dp[j], dp[j-w[a[i][k]]]+c[a[i][k]]);
+			}
+		}
+	}
+	cout<<dp[V]<<endl;
+	return 0;
+}
