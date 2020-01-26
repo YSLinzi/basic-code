@@ -1,0 +1,24 @@
+//采用二维数组三层循环实现，时间复杂度较高
+#include <iostream>
+using namespace std;
+
+int N,V;
+int num[101] = {0}, vul[101] = {0}, w[101] = {0};
+int F[101][101] = {0};
+
+int main(void){
+	cin>>N>>V;
+	for(int i = 1; i<=N; ++i){
+		cin>>vul[i]>>w[i]>>num[i];
+	}
+	for(int i = 1; i<=N; ++i){//枚举物品的种数 
+		for(int v = 0; v<=V; ++v) {//枚举物品的体积
+			for(int k = 0; k<= num[i]; ++k){//枚举每种物品的数量 
+				if(v>=k*vul[i])
+					F[i][v] = max(F[i][v], F[i-1][v-k*vul[i]]+k*w[i] );
+			}
+		}
+	}
+	cout<<F[N][V];
+	return 0;
+}
