@@ -1,0 +1,32 @@
+//用数据测试后发现浮点数就可以，但是整数不适用
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+void bucket_sort(float arr[],int len){
+	int size = len;
+	vector<float> bucket[size];//创建一个桶 
+	for(int i = 0; i<len; ++i){
+		int bit = size*arr[i];//bit作为桶的编号
+		bucket[bit].push_back(arr[i]);//将元素压入桶中 
+	}
+	for(int i = 0; i<size; ++i){
+		sort(bucket[i].begin(),bucket[i].end());//对每个桶内的数字进行排序 
+	}
+	int index = 0;
+	for(int i = 0; i<size; ++i){//遍历桶 
+		for(int j = 0; j<bucket[i].size(); ++j){//遍历桶内的元素 
+			arr[index++] = bucket[i][j];
+		}
+	}
+	
+}
+int main(void){
+	float arr[] = {0.78, 0.49, 0.27, 0.13, 0.56, 0.89, 0.62};
+	int len = sizeof(arr)/sizeof(float);
+	bucket_sort(arr, len);
+	for(int i = 0; i<len; ++i)
+		cout<<arr[i]<<' ';
+	return 0;
+}
