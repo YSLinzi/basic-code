@@ -1,0 +1,98 @@
+#include<stdio.h> 
+#include<stdlib.h>
+
+typedef struct Node{
+	int data;
+	struct Node* pNext;
+}NODE; 
+typedef struct Stack{
+	NODE* pTop;
+	NODE* pBottom;
+}STACK;
+
+void Init(STACK*);
+void Push(STACK*, int);
+void Traverse(STACK*);
+bool Pop(STACK*, int*);
+void Clear(STACK*);
+
+int main(void){
+	STACK st;
+	int num;
+	Init(&st);//创建一个空栈 
+	Push(&st, 2);
+	Push(&st, 3);
+	Push(&st, 4);
+	Push(&st, 5);
+	Traverse(&st);
+	
+	Clear(&st);
+	Traverse(&st);
+	
+	if(Pop(&st, &num)){
+		printf("出栈的元素是%d ",num);
+	}
+	else{
+		printf("出栈失败！");
+	}
+	return 0;
+}
+//初始化栈 
+void Init(STACK* pS){
+	pS->pTop = (NODE*)malloc(sizeof(NODE));
+	pS->pBottom = pS->pTop;
+	pS->pTop->pNext = NULL;
+}
+
+//压栈 
+void Push(STACK* pS, int val) {
+	NODE* pNew = (NODE*)malloc(sizeof(NODE));
+	
+	pNew->pNext = pS->pTop;
+	pNew->data = val;
+	
+	pS->pTop = pNew;
+	return;
+}
+//遍历输出 
+void Traverse(STACK* pS){
+	NODE* p = (NODE*)malloc(sizeof(NODE));
+	p = pS->pTop;
+	while(p != pS->pBottom ){
+		printf("%d ",p->data);
+		p = p->pNext;
+	}
+	printf("\n");
+	return;																																																																																																																																																																																																																																																																																																																															
+}
+//出栈时把出栈的元素存储到 pVal 所指向的变量中 
+bool Pop(STACK* pS, int* pVal) {
+	//先判断是否为空 
+	if(pS->pTop == pS->pBottom)
+		return false;
+	else{
+		Node* temp = pS->pTop;
+		*pVal = temp->data;
+		pS->pTop = temp->pNext;
+		free(temp);
+		temp = NULL;
+		return true;
+	} 
+		
+}
+//清空
+void Clear(STACK* pS){
+	if(pS->pTop == pS->pBottom)
+		return;
+	else{
+		NODE* p = pS->pTop;
+		NODE* q = NULL;
+		
+		while(p != pS->pBottom){
+			q = p->pNext;
+			free(p);
+			p = q;
+		}
+		pS->pTop = pS->pBottom;
+	}
+}
