@@ -1,0 +1,100 @@
+/*
+用一个数组A[1..n]来实现两个栈，使得两个栈中的元素总数不到n时，两者都不会发生上溢。PUSH和POP操作的时间为O(1)
+思路：分别将数组的首尾两端作为两个栈的栈底即可。
+*/
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+const int n = 8;
+struct stack{
+	int top_a;
+	int top_b;
+	int arr[n];
+}st;
+
+void init_stack(){
+	st.top_a = -1;//空栈，top_a 为 -1 表示以左端端点为初始栈顶的栈（左栈） 
+	st.top_b = n;//空栈，top_b 为 n 表示以右端端点为初始栈顶的栈（右栈） 
+}
+//判断栈是否为空   flag 判断是进入左栈还是进入右栈 
+bool stack_empty(int flag){
+	if(st.top_a<-1 && flag == 0)//左栈为空 
+		return true;
+	if(st.top_b>n && flag == 1)//右栈为空 
+		return true;
+	return false;
+}
+//入栈
+void stack_push(int arr[], int num, int flag) {
+	if(flag == 0){
+		st.top_a++; 
+		if(st.top_a>=st.top_b){
+			cerr<<"不能进入左栈，发生上溢"<<endl;
+		}
+		else{
+			st.arr[st.top_a] = num;
+		}
+	}
+	else{
+		st.top_b--;
+		if(st.top_a >= st.top_b)
+			cerr<<"不能进入右栈，发生上溢！"<<endl;
+		else
+			st.arr[st.top_b] = num;
+	}
+}
+//出栈
+int stack_pop(int arr[], int flag) {
+	if(flag == 0){
+		st.top_a--;
+		if(stack_empty(flag)){
+			cerr<<"左栈已空，发生下溢！"<<endl;
+			return -1;
+		}
+		else{
+			return st.arr[st.top_a+1];
+		}
+	}
+	else{
+		st.top_b++;
+		if(stack_empty(flag)){
+			cerr<<"右栈已空，发生下溢！"<<endl;
+			return -1;
+		}
+		else{
+			return st.arr[st.top_b-1];
+		}
+	}
+}
+//检测两个栈是否为空，目的是使得所有的数组都能输出 
+bool all_data_out_of_stack(){
+	if(st.top_a<-1 &&st.top_b>n){
+		cout<<"所有数据已经全部出栈！"<<endl;
+		return true;
+	}
+	else
+		return false;
+}
+int main(){
+	init_stack();
+	int num, flag ;
+	srand((unsigned)time(NULL));
+	cout<<"随机对两个栈进行入栈"<<endl;
+	for(int i = 0; i<n; ++i) {
+		num = rand()%100;
+		flag = rand()%(1-0+1)+0;
+		stack_push(st.arr, num, flag);
+	}
+	cout<<"随机对两个栈进行出栈"<<endl;
+	for(int j = 0; ; j++){
+		flag = rand()%(1-0+1)+0;
+		int k = stack_pop(st.arr,flag);
+		if(all_data_out_of_stack())
+			break;
+		else if(k!= -1)
+			cout<<k<<' ';	
+	}
+	return 0;
+}
