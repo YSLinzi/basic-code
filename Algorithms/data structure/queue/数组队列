@@ -1,0 +1,60 @@
+//数组队列 
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+const int n = 8;
+struct Queue{
+	int head;
+	int tail;
+	int arr[n];
+}queue;
+//初始化
+void init_queue(){
+	queue.head = queue.tail = 1;
+}
+bool queue_empty(){
+	if(queue.head == queue.tail)
+		return true;
+	else
+		return false;
+}
+//进队 
+void enqueue(int arr[], int num){
+	if(queue.head == queue.tail+1)
+		cerr<<"overflow"<<endl;
+	else{
+		queue.arr[queue.tail] = num;
+		if(queue.tail == n)
+			queue.tail = 0;
+		else
+			queue.tail++;
+	}
+}
+//出队 
+int dequeue(int arr[]){
+	int k;
+	if(queue_empty())
+		cerr<<"undeflow"<<endl;
+	else{
+		k = queue.arr[queue.head];
+		if(queue.head == n)
+			queue.head = 0;
+		else
+			queue.head++;
+	}
+	return k;
+}
+int main(void){
+	init_queue();
+	int x;
+	srand((unsigned)time(NULL));
+	for(int i = 0; i<n; ++i){
+		x = rand()%100;
+		enqueue(queue.arr, x);
+	}
+	for(int i = 0; i<n;++i)
+		cout<<dequeue(queue.arr)<<' ';
+	return 0;
+}
