@@ -1,0 +1,69 @@
+/*
+   1.通过函数完成对结构体变量的输入和输出
+   2.指针的优点：
+               快速地传递数据
+                耗用内存小
+   				执行速度快 
+   示例：OutputStudent函数发送地址还是发送内容
+    
+*/ 
+#include <stdio.h> 
+#include <string.h>
+
+struct Student
+{
+	int age;
+	char sex;
+	char name[100];	
+};
+
+void InputStudent(struct Student*) ;
+void OutputStudent(struct Student* );
+int main(void) 
+{
+	struct Student st;
+	printf("%d\n", sizeof(st)) ;
+	InputStudent(&st);//对结构体变量输入 必须发送st的地址 
+	OutputStudent(&st);
+	//OutputStudent(st);//对结构体变量输出  可以发送st的地址也可以发送st的内容  但为了减少内存的耗费，也为了提高执行的速度，推荐发送地址 
+	printf("%d %c %s\n", st.age, st.sex, st.name);
+	return 0;
+}
+void InputStudent(struct Student* pstu) 
+{
+	(*pstu).age = 50;
+	pstu -> sex = 'F';
+	strcpy(pstu-> name, "张三");
+}
+
+void OutputStudent(struct Student* ss)
+{
+	printf("%d %s %c\n", ss->age, ss->name, ss->sex);
+}
+/*如果不是指针形式，也可以这样写 
+void OutputStudent(struct Student ss)
+{
+	printf("%d %s %c\n", ss.age, ss.name, ss.sex);
+}
+*/
+
+/*注意： 
+int main(void)
+{
+	struct Student st;//14行 
+	
+	InputStudent(st);//对结构体变量输入 
+	//OutputStudent();
+	
+	printf("%d %c %s\n",st.age, st.sex, st.name);
+	return 0;		
+}
+
+//本函数无法修改主函数14行st的值 ，所以本函数是错误的 
+void InputStudent(struct Student stu)
+{
+	stu.age = 80;
+	stu.sex = 'F';
+	strcpy(stu.name,"张三");//不能写成  stu.name = "张三" ,str表示字符串，cpy是copy的缩写，strcpy表示字符串的拷贝。本语句表示把张三拷贝到name这个字符串里面去 	
+}
+*/
