@@ -1,0 +1,128 @@
+#include<stdio.h> 
+#include<stdlib.h>
+
+typedef struct Node{
+	int data;
+	struct Node* pNext;
+}NODE;
+typedef struct Queue{
+	NODE* pFront;
+	NODE* pRear;
+}QUEUE;
+
+//函数声明 
+void Init(QUEUE* );
+bool IsEmpty(QUEUE*); 
+void Push(QUEUE*, int);
+void Traverse(QUEUE*);
+int GetTop(Queue*);
+bool Pop(QUEUE* , int*);
+void  Destory(QUEUE* );
+ 
+int main(void){
+	QUEUE pQ; 
+	int val;
+	int top; 
+	Init(&pQ);
+	Push(&pQ, 1);
+	Push(&pQ, 2);
+	Push(&pQ, 3);
+	Push(&pQ, 4);
+	Traverse(&pQ);
+	top = GetTop(&pQ);
+	printf("队列顶的元素是：%d\n", top);
+	if(Pop(&pQ,&val)){
+		printf("出队成功，出队的元素是：%d\n", val);
+		Traverse(&pQ);
+	}
+	else
+		printf("出队失败！");
+	
+	
+	Destory(&pQ);
+	Traverse(&pQ);
+	
+	return 0;
+}
+//初始化
+void Init(QUEUE* pQ){
+	if(NULL == pQ){
+		return;
+	}
+	pQ->pFront = (NODE*)malloc(sizeof(NODE));
+	pQ->pRear = pQ->pFront;
+	
+	pQ->pFront = NULL;
+	pQ->pRear = NULL;
+}
+//判断是否为空
+bool IsEmpty(QUEUE* pQ){
+	if(NULL== pQ)
+		return false;
+	if(NULL == pQ->pFront)
+	 	return true;
+	return false;
+}
+//入队
+void Push(QUEUE* pQ, int val) {
+	NODE* pNew = (NODE*)malloc(sizeof(NODE));
+	if(NULL == pNew){
+		return;
+	}
+	pNew->data = val;
+	pNew->pNext = NULL;
+	
+	if(IsEmpty(pQ)){
+		pQ->pFront = pNew;
+		pQ->pRear = pNew;
+	}
+	else{
+		pQ->pRear->pNext = pNew;
+		pQ->pRear = pNew;
+	}
+}
+//遍历
+void Traverse(QUEUE* pQ){
+	NODE* p = pQ->pFront;
+	while(p != NULL){
+		printf("%d ", p->data);
+		p = p->pNext;
+	}
+	printf("\n");
+	
+}
+//获取队列顶元素
+int GetTop(Queue* pQ) {
+	if(IsEmpty(pQ))
+		exit(-1);
+	else
+		return pQ->pFront->data;
+}
+//出队
+bool Pop(QUEUE* pQ, int* pVal) {
+	if(IsEmpty(pQ)){
+		return false;
+	}
+	else{
+		*pVal = pQ->pFront->data;
+		NODE* temp = pQ->pFront;
+		pQ->pFront = temp->pNext;
+		free(temp);
+	}
+	if(NULL == pQ->pFront){
+		pQ->pRear = NULL;
+	}
+	return true;
+}
+//队列的销毁 
+void  Destory(QUEUE* pQ){
+	int num;
+	if(pQ == NULL)
+		return;
+	while(IsEmpty(pQ)!= true){
+		Pop(pQ, &num);	
+	}
+	free(pQ);
+	pQ->pFront = NULL;
+	pQ->pRear = NULL;
+}
