@@ -1,0 +1,57 @@
+//数组栈的实现 
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+const int n = 8;
+struct stack{
+	int top;
+	int arr[n];
+}st;
+//初始化
+int init_stack(){
+	st.top = -1;//top为 0 表示空栈
+	return 1; 
+}
+//判断栈是否为空
+bool stack_empty(int arr[]){
+	if(st.top == -1)
+		return true;
+	else
+		return false;
+}
+//入栈
+void stack_push(int arr[], int num){
+	if(st.top+1 == n)
+		cerr<<"overflow!"<<endl;//上溢  如果s.top>n,表示栈满，则进行 push 操作会发生上溢（overflow）
+	else{
+		st.top++;
+		cout<<st.top <<endl;
+		st.arr[st.top] = num;
+	} 
+}
+//出栈
+int stack_pop(int arr[]){
+	if(stack_empty(st.arr)){
+		cerr<<"underflow!"<<endl;//如果s.top=0，表示栈空，如果试图对空栈进行POP操作会发生下溢（underflow）
+		return 0;
+	}
+	else{
+		st.top--;
+		return st.arr[st.top+1];
+	}
+}
+int main(void){
+	init_stack();
+	int num = 0;
+	srand((unsigned)time(NULL));
+	for(int i = 0; i<n; ++i){
+		num = rand()%100;
+		stack_push(st.arr,num);
+	}
+	for(int i = 0; i<n; ++i){
+		cout<<stack_pop(st.arr)<<' ';
+	}
+	return 0;
+}
