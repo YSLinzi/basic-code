@@ -1,0 +1,86 @@
+//在双向链表中设置哨兵 ，使得 nil->next指向链表的头节点， nil->prev指向链表的尾节点 
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+typedef struct list{
+	struct list* prev;
+	struct list* next;
+	struct list* nil;
+	int data;
+}List,*Plist;
+Plist init_list(List &L){
+	L.nil = (Plist)malloc(sizeof(List));
+	L.nil->next = L.nil;
+	L.nil->prev = L.nil;
+	return L.nil;
+}
+Plist search_list(List &L, int num){
+	Plist x;
+	x = L.nil->next;
+	while(x!=L.nil && x->data != num)
+		x = x->next;
+	return x;
+}
+//search_list改进，不用做两次判断不等于，只需要判断是否等于key 即可
+Plist search_list2(List &L, int num){
+	Plist x = L.nil->next;
+	L.nil->data = num;
+	while(x->data != num)
+		x = x->next;
+	if(x == L.nil){
+		L.nil->data = NULL;//如果 x 等于哨兵，说明此表中没有这个数据，再把哨兵的值恢复成初始值
+		return L.nil; 
+	}
+	else
+		return x;//已经找到 
+}
+Plist delete_list(List &L,Plist x){
+	x->prev->next = x->next;
+	x->next->prev = x->prev;
+	return L.nil;
+}
+void print_list(List L){
+	Plist p = L.nil->next;
+	if(p!= L.nil){
+		while(p!=L.nil){
+			cout<<p->data<<' ';
+			p = p->next;
+		}
+		cout<<endl;
+	}
+	else
+		cout<<"此链表为空！"<<endl;
+}
+//头插 
+Plist insert_list(List &L, Plist x){
+	x->next = L.nil->next;
+	L.nil->next->prev = x;
+	L.nil->next = x;
+	x->prev = L.nil;
+	return L.nil;
+}
+int main(void){
+	List L;
+	init_list(L);
+	print_list(L);
+	srand((unsigned)time(NULL));
+	Plist t;
+	for(int i = 0; i<10; ++i){
+		Plist x = (Plist)malloc(sizeof(List));//每循环一次造出一个节点
+		x->data = rand()%100;
+		insert_list(L,x);
+		if(i == 6)
+			t = x;
+	}
+	print_list(L);
+	Plist res = search_list(L, 5);
+	if(res == L.nil)
+		cout<<"未找到数据"<<endl;
+	else
+		cout<<"已经找到数据: "<<res->data<<endl;
+	delete_list(L,t);//因为是头插，所以虽然输出删除的数字并不是排在第6位，而是反着数 
+	print_list(L);
+	return 0;
+}
