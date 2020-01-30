@@ -1,0 +1,90 @@
+#include <stdio.h> 
+#include<malloc.h>
+
+struct TreeNode{
+	int data;
+	struct TreeNode* left;
+	struct TreeNode* right;
+};
+struct TreeNode* createBinTree(void);
+void PreOrderTraverse(struct TreeNode*);
+void InOrderTraverse(struct TreeNode*);
+void PostOrderTraverse(struct TreeNode*);
+
+int main(void)
+{
+	struct TreeNode * root = createBinTree();
+	PreOrderTraverse(root);
+	printf("\n");
+	InOrderTraverse(root);
+	printf("\n");
+	PostOrderTraverse(root);
+	return 0;
+}
+/*
+//静态构造二叉树 
+struct TreeNode* createBinTree(void){
+	struct TreeNode* pA = (struct TreeNode*)malloc(sizeof(struct TreeNode));//造出每一个节点 
+	struct TreeNode* pB = (struct TreeNode*)malloc(sizeof(struct TreeNode))	;
+	struct TreeNode* pC = (struct TreeNode*)malloc(sizeof(struct TreeNode))	;
+	
+	pA->data = 3;
+	pB->data = 2;
+	pC->data = 4;
+	
+	pA->left = pB;
+	pA->right = pC;
+	pB->left = NULL;
+	pB->right = NULL;
+	pC->left = NULL;
+	pC->right = NULL;
+	
+	return pA;
+	
+}
+*/
+//动态构造二叉树 
+struct TreeNode* createBinTree(void){
+	struct TreeNode* pT = (struct TreeNode*)malloc(sizeof(struct TreeNode));
+	int num;
+	scanf("%d", &num);
+	if(num == 0) {
+		pT = NULL;
+	}
+	else{
+		pT->data = num;
+		pT->left = createBinTree();
+		pT->right = createBinTree();	
+	}
+	return pT;
+}
+
+//先序遍历 先访问根节点，再先序访问左子树，再访问右子树 
+void PreOrderTraverse(struct TreeNode* root){
+	if(root){
+		printf("%d ", root->data);
+		PreOrderTraverse(root->left);//root->left可以代表整个左子树，同理可得右子树 	
+		PreOrderTraverse(root->right);	
+	}
+}
+
+//中序遍历
+void InOrderTraverse(struct TreeNode *root)
+{
+	if(root)
+	{
+		InOrderTraverse(root->left);
+		printf("%d ",root->data);
+		InOrderTraverse(root->right);
+	}
+}
+//后序遍历 
+void PostOrderTraverse(struct TreeNode *root) 
+{
+	if(root)
+	{
+		PostOrderTraverse(root->left);
+		PostOrderTraverse(root->right);
+		printf("%d ",root->data);
+	}
+}
