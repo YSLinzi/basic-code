@@ -1,0 +1,144 @@
+//双链表的操作 
+#include <iostream>
+#include <ctime>
+#include <cstdlib>
+using namespace std;
+
+typedef struct List{
+	int data;
+	struct List* prev;
+	struct List* next;
+}list,*Plist; 
+//创建一个链表，产生空的双向链表
+Plist create_list(){
+	Plist head = (Plist)malloc(sizeof(list));//产生头节点 
+	head->prev = NULL;
+	head->next = NULL;
+	if(head == NULL){
+		cout<<"系统分配失败！"<<endl;
+		exit(-1);
+	}
+	int len;
+	printf("请输入链表的长度: ");
+	scanf("%d", &len);
+	
+	
+	Plist tail = head;//定义一个指针时刻指向指向尾节点的后面 
+	srand( (unsigned)time( NULL ) );
+	int num;
+	for(int i = 0;i< len; ++i){
+		num = rand()%100;
+		
+		Plist New = (Plist)malloc(sizeof(list));//每循环一次造出一个新的节点 
+		New->next = NULL;
+		New->data = num;
+		
+		tail->next = New;
+		New->prev = tail;
+		tail = tail->next;
+	}
+	return head;	
+} 
+bool empty_list(Plist head) {
+	if(head->prev ==NULL && head->next == NULL)
+		return true;
+	else
+		return false;
+}
+void traverse(Plist head){
+	Plist temp = head->next;
+	while(temp != NULL){
+		printf("%d ",temp->data);
+		temp = temp->next;
+	}
+}
+Plist search_list(Plist head, int num){
+	Plist val = head;
+	//保证不是一个非空链表 
+	while(val!= NULL && val->data != num)
+		val = val->next;
+	return val; 
+}
+Plist insert_list(Plist head, int data, int pos){
+	//新建数据域为 data 的节点 
+	Plist temp = (Plist)malloc(sizeof(list));
+	temp->data = data;
+	temp->prev = NULL;
+	temp->next =  NULL;
+	//插到链表的头部 
+	if(pos == 1){
+		temp->next = head;
+		head->prev = temp;
+		head->data = temp->data;
+		head = temp;
+	}
+	else{
+		Plist body = head;
+		for(int i = 1; i<=pos-1; ++i){
+			body = body->next;
+			
+		}
+		//插到链表的尾部 
+		if(body->next == NULL){
+			body->next=temp;
+			temp->prev = body;
+		}
+		else{
+			body->next->prev = temp;
+			temp->next = body->next;
+			temp->prev= body;
+			body->next= temp;
+		}
+	}
+	return head;
+}
+//删除
+Plist delete_list(Plist head, int data){
+	Plist find = head->next;
+	while(find != NULL){
+		if(find->data == data){
+			find->prev->next = find->next;
+			find->next->prev = find->prev;
+			free(find);
+			return head;
+		}
+		find = find->next;
+	}
+	printf("该链表中没有此元素\n");
+	return head;
+}
+//更改函数的位置
+Plist change_list(Plist head, int pos, int num){
+	Plist temp = head;
+	for(int i = 1; i<=pos; ++i){
+		temp = temp->next;
+	}
+	temp->data = num;
+	return head;
+}
+int main(void){
+	Plist head = NULL;
+	head = create_list();
+	if(empty_list(head))
+		cout<<"链表为空！"<<endl;
+	traverse(head);
+	
+	cout<<endl<<"查找数据的结果是：";
+	Plist x;
+	x = search_list(head, 56);
+	if(x == NULL)
+		cout<<"未找到数据"<<endl;
+	else
+		cout<<"已经找到数据："<<x->data<<endl;
+	int pos = 8;
+	cout<<"增加10 之后的链表为："<<endl;
+	head = insert_list(head, 10, pos);
+	traverse(head);
+	cout<<endl<<"删除10 之后的链表为："<<endl;
+	head = delete_list(head, 10);
+	traverse(head);
+	cout<<endl<<"表中第三个节点被更改为100后的链表为："<<endl;
+	head = change_list(head, 3, 100);
+	traverse(head);
+	return 0;
+  }
