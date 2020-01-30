@@ -1,0 +1,46 @@
+/*
+二叉树已知两种遍历序列求原始二叉树 
+*/
+#include <iostream>
+using namespace std;
+
+//已知先序和中序求后序
+void tree_from_ordering(const char* pre, const char* in, int len){
+	if(len == 0){
+		return ;
+	}
+	const char value = *pre;
+	int i = 0;
+	//记录第一个根节点的下标 
+	for(; i<len; ++i){
+		if(in[i] == *pre)
+			break;
+	}
+	tree_from_ordering(pre+1, in, i);//左子树 
+	tree_from_ordering(pre+i+1,in+i+1, len-i-1);//右子树 
+	cout<<value<<' ';
+} 
+//已知后序和中序求先序
+void tree_from_inposordering(const char* in, const char* post, int len){
+	if(len == 0)
+		return;
+	const char value = *(post+len-1);
+	cout<<value<<' ';
+	int i = 0; 
+	for(; i<len; ++i){
+		if(*(in+i) == *(post+len-1))
+			break;
+	}
+	tree_from_inposordering(in, post, i);
+	tree_from_inposordering(in+i+1, post+i, len-i-1);
+}
+int main(void){
+	const char* pre="ABDGHCEFI";  
+    const char* in="GDHBAECIF";  
+	tree_from_ordering(pre, in, 9);
+	cout<<endl;
+	const char* post = "DECBHGFA";
+	const char* in2 = "BDCEAFHG";
+	tree_from_inposordering(in2, post, 8);
+	return 0;
+}
