@@ -1,0 +1,99 @@
+#include <iostream>
+#include <cstdlib>
+#include <cmath> 
+using namespace std;
+
+typedef struct ListNode{
+	int value;
+	struct ListNode* next;
+}List,*Plist;
+
+typedef struct Hashtable{
+	int size;
+	Plist* lists;
+}Hash, *Phash;
+
+bool Isprime(int num){
+	if(num<=1)
+		return false;
+	for(int i = 2; i<= sqrt(num); ++i){
+		if(num%i == 0)
+			return false;
+	}
+	return true;
+}
+//寻找下一个素数 
+int NextPrime(int num){
+	int i = num-1;
+	if(num<=2)
+		return false;
+	else{
+			while(!(Isprime(i)))
+				i--;
+	}
+	return i;
+}
+int Hash_function(int key, int len){
+	return key%len;
+}
+Phash init_hashtable(int size){
+	//创建表
+	Phash H = (Phash)malloc(sizeof(Hash));
+	H->size = NextPrime(size);//实际能够映射到的范围为不大于表长的最大素数
+	H->lists = (Plist*) malloc(H->size * sizeof(Plist));
+	//初始化表头的节点
+	for(int i = 0; i<H->size; ++i){
+		H->lists[i] = (Plist)malloc(sizeof(List));
+		H->lists[i]->next = NULL;
+	}
+	return H;
+}
+Plist find_key(int key, Phash H){
+	 
+	Plist L = H->lists[Hash_function(key, H->size)];
+	Plist pos = L->next;//位置
+	
+	while(pos != NULL && pos->value != key)
+		pos = pos->next;
+	return pos;
+}
+void insert_key(int key, Phash H){
+	
+	Plist p = find_key(key, H);
+	//如果没有找到就插入，如果节点为空则什么也不做
+	if(p == NULL){
+		Plist newNode = (Plist)malloc(sizeof(List));
+		Plist L = H->lists[Hash_function(key, H->size)];
+		newNode->value = key;
+		newNode->next = L->next;
+		L->next = newNode;
+	}
+}
+void delete_key(int key, Phash H){
+	Plist p = find_key(key, H);
+	if(p!=NULL){
+		Plist L = H->lists[Hash_function(key, H->size)];
+		Plist prepos = L;
+		while(prepos->next != p) 
+			prepos = prepos->next;
+		prepos->next = p->next;
+		free(p);	
+	}
+}
+int main(void){
+	Phash table;
+	int val[100] = {1, 9, 12, 11, 25, 35, 17, 20};
+	int n = 8;
+	int m = 2*n;//表长，假设装填因子为1/2 
+	table = init_hashtable(m);
+	for(int i = 0; i<n; ++i)
+		insert_key(val[i], table);
+	
+	Plist p = find_key(17, table);
+	cout<<p->value;
+	cout<<endl;
+	delete(17, table);
+	p = find_key(17, table);
+	cout<<p->value;
+	return 0;
+}
