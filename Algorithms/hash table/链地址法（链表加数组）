@@ -1,0 +1,45 @@
+#include <iostream>
+#include<cstdlib>
+#include <algorithm>
+using namespace std;
+const int N = 10;
+typedef struct List{
+	int num;
+	struct List* next;
+}list, *Plist;
+typedef struct Hashtable{
+	Plist value[N];
+	int size;
+}Hash, *Phash;
+
+Phash table;//创建一个哈希表 
+
+void insert_key(int key){
+	Plist p = new List;
+	p->num = key;
+	p->next = table->value[key%N]->next;
+	table->value[key%N]->next = p;
+}
+int search_key(int key){
+	Plist q = new List;
+	q = table->value[key%N]->next;
+	while(q!=NULL){
+		if(q->num == key)
+			return key%N;
+		q = q->next;
+	}
+	return -1;
+}
+int main(void){
+  	int arr[N] = {12, 45, 2, 78, 6, 44, 87,31, 33, 99};
+  	int num;
+  	//创建的过程 
+	table = new Hash;
+	for(int i = 0; i<N; ++i)
+	  table->value[i] = new List;
+	for(int i = 0; i<N; ++i)
+		insert_key(arr[i]);
+	while(scanf("%d", &num)!= EOF)
+		printf("%d\n", search_key(num));
+	return 0;
+}
