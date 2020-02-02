@@ -1,0 +1,267 @@
+#include <iostream>
+using namespace std;
+
+#define Red 1
+#define Black 0
+#define Nil -1 
+typedef struct Tree{
+	struct Tree* left;
+	struct Tree* right;
+	struct Tree* parent;
+	int key;
+	int color;
+}tree,*Ptree;
+Ptree root = NULL;
+Ptree nil = NULL;
+
+void left_rotate(Ptree x){//以 x 点为基准旋转 
+	Ptree y = x->right;//设置y节点指向 x 的右孩子 
+	x->right = y->left;
+	if(y->left != nil)
+		y->left->parent = x;
+	y->parent = x->parent;
+	if(x->parent == nil)
+		root = y;
+	else if(x == x->parent->left)
+		x->parent->left = y;
+	else
+		x->parent->right = y;
+	y->left = x;
+	x->parent = y;
+}
+void right_rotate(Ptree x){
+	Ptree y = x->left;
+	x->left = y->right;//y的右孩子成为 x 的左孩子
+	if(y->right != nil) 
+		y->right->parent = x;
+	y->parent = x->parent;
+	if(x->parent ==nil)
+		root = y;
+	else if(x == x->parent->right)
+		x->parent->right = y;
+	else
+		x->parent->left = y;
+	y->right = x;//x 成为 y 的右孩子 
+	x->parent = y;
+}
+void rb_insert_fixup(Ptree z){
+	while(z->parent->color == Red){
+		//情况一：当前节点的父节点为红色且叔节点为红色 
+		if(z->parent == z->parent->parent->left){
+			Ptree y = z->parent->parent->right;
+			if(y->color == Red){//叔节点为红色 
+				z->parent->color = Black;
+				y->color = Black;
+				z->parent->parent->color = Red;
+				z = z->parent->parent;
+			}
+			else {
+				//情况二：z 是一个右孩子且叔节点为黑色 
+				if(z == z->parent->right){
+					z = z->parent;
+					left_rotate(z);
+				}
+				//情况三：z 是一个左孩子且叔节点为黑色，改变 z 的 父亲和祖父节点的颜色并做一次右旋 
+				z->parent->color = Black;
+				z->parent->parent->color = Red;
+				right_rotate(z->parent->parent);
+			}
+		}
+		else{
+			Ptree t = z->parent->parent->left;
+			if(t->color == Red){
+				z->parent->color = Black;
+				t->color = Black;
+				z->parent->parent->color = Red;
+				z = z->parent->parent;
+			}
+			else{
+				if(z == z->parent->left){
+					z = z->parent;
+					right_rotate(z);//与上面相反 
+				}
+				z->parent->color = Black;
+				z->parent->parent->color = Red;
+				left_rotate(z->parent->parent);
+			}
+		}
+	}
+	root->color = Black;//最后给根节点着色 
+}
+void rb_insert(Ptree z){
+	Ptree y = nil;
+	Ptree x = root;
+	while(x!=nil){
+		y = x;
+		if(z->key < x->key)
+			x = x->left;
+		else
+			x = x->right;
+	}
+	z->parent = y;
+	if(y == nil)
+		root = z;//树是空的
+	else if(z->key < y->key) 
+		y->left = z;
+	else
+		y->right = z;
+	z->left = nil;//给插入节点的左右孩子赋值为空
+	z->right = nil;
+	z->color = Red;//给插入节点的着为红色 
+	rb_insert_fixup(z);	
+}
+void inorder_traverse(Ptree p){
+	if(p != nil){
+		inorder_traverse(p->left);
+		cout<<p->key<<' '<<p->color<<' '<<endl;
+		inorder_traverse(p->right);
+	}
+}
+void rb_transplant(Ptree u, Ptree v){
+	if(u->parent == nil)
+		root = v;
+	else if(u == u->parent->left)
+		u->parent->left = v;
+	else
+		u->parent->right = v;
+	v->parent = u->parent;
+}
+//寻找最小值 
+Ptree tree_minimum(Ptree x){
+	while(x->left != nil)
+		x = x->left;
+	return x;
+}
+Ptree tree_search(Ptree x, int k){
+	while(x != nil && k!=x->key){
+		if(k<x->key)
+			x = x->left;
+		else
+			x = x->right;
+	}
+	return x;
+}
+
+void rb_delete_fixup(Ptree x){
+	Ptree w = NULL;// w 是 x 的兄弟节点
+	while( x!= root && x->color == Black){
+		if(x == x->parent->left){
+			w = x->parent->right;
+			//第一种情况：兄弟节点为红 
+			if(w->color==Red){
+				//将当前节点的父节点涂红，兄弟节点涂黑，以父节点为支点左旋 
+				w->color = Black;
+				x->parent->color = Red;
+				left_rotate(x->parent);
+				w = x->parent->right;//旋转后兄弟节点发生改变，所以要调整一下指向 
+			}
+			//情况二：兄弟节点的两个孩子都为黑色 
+			if(w->left->color== Black && w->right->color == Black){
+				w->color = Red;
+				x = x->parent;// x 结点向上移动成为新的待调整的点 
+			}
+			else{
+				//情况三：x 的兄弟节点 w 是黑色，w的左孩子是红的，右孩子是黑色 
+				if(w->right->color == Black){
+					w->left->color = Black;
+					w->color = Red;
+					right_rotate(w);
+					w = x->parent->right;
+				}
+				//情况四： x的兄弟节点 w 是黑色，且w的右孩子是红色 
+				w->color = x->parent->color;//先将兄弟节点的颜色涂成父节点的颜色
+				x->parent->color = Black;
+				w->right->color = Black;
+				left_rotate(x->parent);
+				x = root;
+			}
+		}
+		else{
+			w = w->parent->left;
+			if(w->color == Red){
+				w->color = Black;
+				x->parent->color = Red;
+				right_rotate(x->parent);
+				w = x->parent->left;
+			}
+			if(w->left->color == Black && w->right->color == Black){
+				w->color = Red;
+				x = x->parent;
+			}
+			else{
+				if(w->left->color == Black){//与上面区分 左子树为黑 
+					w->right->color = Black;//右节点为黑 
+					w->color = Red;
+					left_rotate(w);//左旋 
+					w = x->parent->left;
+				}
+				w->color = x->parent->color;
+				x->parent->color = Black;
+				w->left->color = Black;
+				right_rotate(x->parent);
+				x = root;
+			}
+		}
+	}
+	x->color = Black;
+}
+void rb_delete(Ptree z){
+	Ptree y = z;//y 为待删除的节点
+	Ptree x;
+	int ycolor = y->color;//ycolor 为 y的原始颜色
+	if(z->left == nil){
+		x = z->right;// x 指向 y 的右节点 ，保存 x 的踪迹拾起移动到 y 的原始位置上 
+		rb_transplant(z, z->right);
+	}
+	else if(z->right == nil){
+		x = z->left;
+		rb_transplant(z, z->left);
+	}
+	else{
+		y = tree_minimum(z->right);// 找到 z 的右子树的后继
+		ycolor = y->color;//y的新的原始节点被重置
+		x = y->right;
+		if(y->parent = z)
+			x->parent = y;
+		else{
+			//用 y 的右孩子代替 y 
+			rb_transplant(y, y->right);
+			y->right = z->right;
+			y->right->parent = y;
+		}
+		rb_transplant(z, y);//把以 y 为根的子树替换为以 z 为根的子树 
+		y->left = z->left;
+		y->left->parent = y;
+		y->color = z->color;//把已经删除的节点的颜色赋值给 y,保证 y 以上的树的结构红黑性质保持不变 
+	}
+	if(ycolor == Black)// y 的原始颜色为黑色，说明需要调整红黑颜色 
+		rb_delete_fixup(x);
+}
+int main(void){
+	int arr[6] = {41, 38, 31, 12, 19, 8};
+	nil = new tree[sizeof(tree)];
+	nil->key = Nil;
+	nil->color = Black;
+	root = nil;
+	int i = 0;
+	Ptree Root = new tree[sizeof(tree)];
+	Root->key = arr[i++];
+	rb_insert(Root);
+	root = Root;
+	while(i<6){
+		Ptree z = new tree[sizeof(tree)];
+		z->key = arr[i];
+		rb_insert(z);
+		i++;
+	} 
+	inorder_traverse(root);
+	cout<<endl;
+	int val[6] = {8, 12, 19, 31, 38, 41};
+	for(i = 0; i<6; ++i){
+		Ptree x = tree_search(root, val[i]);
+		rb_delete(x);
+		inorder_traverse(root);
+		cout<<endl;
+	}
+	return 0;
+}
