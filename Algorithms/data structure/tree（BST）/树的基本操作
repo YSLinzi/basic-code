@@ -1,0 +1,173 @@
+#include <iostream>
+using namespace std;
+
+typedef struct BSTNode{
+	int key;
+	struct BSTNode* left;
+	struct BSTNode* right; 
+	struct BSTNode* parent; 
+}BST,*pBST;
+
+//先序创建一棵二叉树 ，注意输入的时候 0 也要输入进去，作为空 
+void create_tree(pBST &T){
+	int value;
+	cin>>value;
+	if(0 == value)
+		return;
+	else{
+		T = new BST();//加了括号才会对内存进行初始化，否则就会是死循环 
+		T->key = value;
+		T->parent = NULL;
+		create_tree(T->left);
+		create_tree(T->right);
+	}
+}
+void insert_tree(pBST &T, int val){
+	pBST y = new BST();
+	pBST z = new BST();//指向要插入的节点 
+	z->key = val;
+	z->left = NULL;
+	z->right = NULL;
+	z->parent = NULL;
+	
+	pBST x = T;
+	while(x != NULL){
+		y = x;//y始终是 x 的父节点
+		if(val< x->key) 
+			x = x->left;
+		else
+			x = x->right;
+	}
+	z->parent = y;//确定 z 的父节点的位置 
+	if(y == NULL)
+		T = z;
+	else{
+		if(val< y->key)
+			y->left = z;
+		else
+			y->right = z;
+	}
+}
+//先序遍历 
+void preorder_tree(pBST x){
+	if(x != NULL){
+		cout<<x->key<<' ';
+		preorder_tree(x->left);
+		preorder_tree(x->right);
+	}
+}
+//寻找某个值 
+pBST search_tree(pBST &T, int x){
+	if(T == NULL || x == T->key)
+		return T;
+	else{
+		if(x<T->key)
+			return search_tree(T->left, x);//递归实现 
+		else
+			return search_tree(T->right, x);
+	}
+}
+pBST iterative_search_tree(pBST T, int x){
+	while(T != NULL && T->key != x){
+		if(x<T->key)
+			T = T->left;
+		else
+			T = T->right;
+	}
+	return T;
+}
+//寻找树的最大值 
+pBST maxium_tree(pBST &T){
+	while(T->right != NULL)
+		T = T->right;
+	return T;
+}
+//寻找树的最小值 
+pBST minium_tree(pBST &T){
+	while(T->left != NULL)
+		T = T->left;
+	return T;
+}
+//查找某节点的后继节点并返回 
+pBST successor_tree(pBST T){
+	pBST y = NULL;//y用于指向后继节点 
+	if(T->right != NULL);
+		return minium_tree(T->right);
+	//节点 T 的右孩子为空，分两种情况 
+	y = T->parent;
+	//若节点T为其父节点的右孩子，则从T开始沿树而上直到遇到这样一个节点x，这个节点x是它的双亲y的左孩子，此时双亲即为后继节点
+	while(y != NULL && T == y->right){
+		T = y;
+		y = y->parent; 
+	}
+	return y;
+}
+//查找某节点的前驱节点并返回 
+pBST predecessor(pBST T){
+	pBST y = NULL;
+	if(T->left != NULL)
+		return maxium_tree(T->left);
+	y = T->parent;
+	//若节点的左孩子为空，分两种情况 
+	while(y != NULL && T == y->left){
+		T = y;
+		y = y->parent;//从T开始沿树而上直到遇到这样一个节点T，这个节点T是它的双亲y的右孩子，此时双亲即为前驱节点 
+	}
+	return y;
+}
+//二叉树移植 
+void Transplant(pBST &T, pBST u, pBST v){
+	if(u->parent == NULL)//u是根节点 
+		T = v;
+	else{
+		if(u == u->parent->left)
+			u->parent->left = v;
+		else
+			u->parent->right = v;
+	}
+	if(v != NULL)
+		v->parent = u->parent;
+}
+
+void delete_tree(pBST &T, int val){
+	pBST y = new BST();//y指向树的后继节点 
+	pBST z = search_tree(T, val);
+	if(z->left==NULL)
+		Transplant(T,z, z->right);
+	else{
+		if(z->right == NULL)
+			Transplant(T, z, z->left);
+		else{
+			y = minium_tree(T->right);
+			if(y->parent != z){
+				Transplant(T, y, y->right);
+				y->right = z->right;
+				y->right->parent = y;
+			}
+			Transplant(T, z, y);
+			y->left = z->left;
+			y->left->parent = y;
+		}
+	}
+	
+}
+int main(void){
+	pBST root = NULL;
+	create_tree(root);
+	preorder_tree(root);
+	int k;
+	pBST node = search_tree(root, 13);
+	cout<<endl<<"请输入要增加的节点："<<endl;
+	cin>>k;
+	insert_tree(root, k);
+	preorder_tree(root);
+	cout<<endl<<"删除后："<<endl;
+	delete_tree(root, k);
+	preorder_tree(root);
+	
+	return 0;
+}
+/*
+输入 15 6 3 0 0 7 0 13 9 0 0 0 18 17 0 0 20 0  0
+输出 15 6 3 7 13 9 18 17 20（先序） 
+*/
