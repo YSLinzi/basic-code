@@ -1,0 +1,44 @@
+#include <iostream>
+using namespace std;
+
+class CRectangle{
+	private:
+		int w,h;
+		static int TotalArea;//总面积 
+		static int Totalnum;//总数量 
+	public:
+		CRectangle(int, int);
+		~CRectangle();
+		CRectangle(CRectangle &r);
+		static void PrintTotal();//静态成员函数 
+};
+CRectangle::CRectangle(int a, int b){
+	w = a;
+	h = b;
+	Totalnum++;//只要有矩形对象的生成就能引发构造函数的调用，这样就可以随时记录矩形的总数量和总面积 
+	TotalArea += w*h;
+}
+CRectangle::~CRectangle(){
+	Totalnum--;
+	TotalArea -= w*h;
+}
+//复制构造函数防止使用CRectangle 类时，有些对象是调用复制构造函数进行初始化 
+CRectangle::CRectangle(CRectangle &r){
+	w = r.w;
+	h = r.h;
+	Totalnum++;
+	TotalArea += w*h;
+}
+void CRectangle::PrintTotal(){
+	cout<<Totalnum<<','<<TotalArea<<endl;
+	//cout<<w<<endl;//静态成员函数不能访问非静态成员变量 
+}
+int CRectangle::TotalArea = 0;
+int CRectangle::Totalnum = 0;//必须在定义类的文件中对静态成员变量进行一次说明或初始化
+
+int main(void){
+	CRectangle r1(3, 3), r2(2, 2);
+	CRectangle::PrintTotal();
+	r1.PrintTotal();//与上面的写法等价，虽然是这么写，但并不意味着PrintTotal作用在 r1 上面 
+	return 0;
+}
