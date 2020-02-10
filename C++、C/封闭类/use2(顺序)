@@ -1,0 +1,45 @@
+#include <iostream>
+using namespace std;
+
+class CTyre{
+	public:
+		CTyre(){
+			cout<<"A1"<<endl;
+		}
+		~CTyre(){
+			cout<<"A2"<<endl;
+		}
+};
+class CEngine{
+	public:
+		CEngine(){
+			cout<<"B1"<<endl; 
+		}
+		~CEngine(){
+			cout<<"B2"<<endl;
+		}
+};
+class Car{
+	private:
+		CEngine engine;
+		CTyre tyre;
+	public:
+		Car(){
+			cout<<"C1"<<endl;
+		}
+		~Car(){
+			cout<<"C2"<<endl;//后调用的先消亡 
+		}
+};
+int main(void){
+	Car car;
+	return 0;
+}
+/*    输出结果： 
+		B1
+		A1
+		C1
+		C2
+		A2
+		B2
+*/
