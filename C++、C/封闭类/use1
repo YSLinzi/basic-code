@@ -1,0 +1,32 @@
+#include <iostream>
+using namespace std;
+
+class CTyre{
+	private:
+		int radius;//半径
+		int width;//宽度
+	public:
+		CTyre(int r, int w):radius(r),width(w){	};//初始化列表 
+};
+class CEngine{//引擎类 
+	
+};
+class CCar{//汽车类，封闭类 
+	private:
+		int price;//价格
+		CTyre  tyre;
+		CEngine engine;
+	public:
+		CCar(int, int , int);
+		void Print();
+};
+CCar::CCar(int p, int r, int w):price(p), tyre(r, w){
+};
+void CCar::Print(){
+	cout<<price<<endl;
+}
+int main(void){
+	CCar car(2000, 17, 225);
+	car.Print();
+	return 0;
+}
