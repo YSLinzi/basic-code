@@ -1,0 +1,48 @@
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+class String{
+	private:
+		char* str;
+	public:
+		String(const char*s){
+			str = new char[strlen(s)+1];
+			strcpy(str, s);
+		}//构造函数，初始化
+		const char* fun(){
+			return str;
+		}
+		String& operator=(const String &s);
+		~String();
+};
+String & String::operator=(const String &s){
+	if(str == s.str)
+		return *this;
+	if(str)
+		delete []str;
+	if(s.str){
+		str = new char[strlen(s.str)+1];//'\0'
+		strcpy(str,s.str);
+	}
+	else{
+		str = NULL;
+	}
+	return *this;
+}
+String::~String(){
+	
+	if(str){
+		delete []str;
+	}
+}
+
+int main(void){
+	String s1("book");
+	String s2("that");
+	s2 = s1;
+	//String s2 = "hello";//这条语句要是不注释掉就会出错,这本身不是一个赋值语句，
+	//而是初始化语句，它需要去调用构造函数才能实现初始化的操作，而函数并没有 
+	cout<<s2.fun()<<endl;
+	return 0;	
+}
