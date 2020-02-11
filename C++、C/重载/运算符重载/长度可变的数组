@@ -1,0 +1,88 @@
+#include <iostream>
+using namespace std;
+
+class CArray{
+	int size;
+	int *str;//指向动态分配的数组
+	public:
+		CArray(int s = 0); //s表示数组元素的个数 
+		CArray(CArray &a);//复制构造函数 
+		~CArray();//析构函数
+		void push_back(int v);//用于在数组尾部添加一个元素 v
+		CArray & operator = (const CArray &a);//用于数组对象之间的赋值
+		int len() {
+			return size;//返回数组元素的个数 
+		}
+		int &operator[](int i){//用以支持根据下标访问数组元素 
+			return str[i];
+		}	
+};
+CArray::CArray(int s):size(s){
+	if(s == 0)
+		str = NULL;
+	else
+		str = new int[s];
+}
+CArray::CArray(CArray &a){
+	if(!a.str){
+		str = NULL;
+		size = 0;
+		return;
+	}
+	str = new int[a.size];
+	memcpy(str, a.str, sizeof(int)* a.size);
+	size = a.size;
+}
+CArray::~CArray(){
+	if(str)
+		delete []str;
+}
+CArray & CArray::operator =(const CArray &a){
+	if(str == a.str)
+		return *this;
+	if(a.str==NULL){
+		if(str)
+			delete []str;
+		str = NULL;
+		size = 0;
+		return *this;
+	}
+	if(size<a.size){
+		if(str)
+			delete []str;
+		str = new int[a.size];
+	}
+	memcpy(str, a.str, sizeof(int)*a.size);
+	size = a.size;
+	return *this;
+}
+void CArray::push_back(int v){
+	if(str){
+		int *temp = new int[size+1];//重新分配空间
+		memcpy(temp, str, sizeof(int)*size);//拷贝原数组的内容
+		delete []str;
+		str = temp;
+	}
+	else
+		str = new int[1];//数组本来是空的
+	str[size++] = v;//加入新的数组元素 
+}
+int main(){
+	CArray a;//定义一个数组
+	for(int i = 0; i<5; ++i){
+		a.push_back(i);//为数组赋值 
+	} 
+	CArray b, c;
+	b = a;
+	for(int i = 0; i<a.len(); ++i)
+		cout<<b[i]<<' ';
+	b = c;//此时 b 变为空 
+	for(int i = 0; i<b.len(); ++i)
+		cout<<b[i]<<' ';
+	cout<<endl;
+	a[3] = 60;
+	CArray d(a);//调用复制构造函数
+	for(int i = 0; i<d.len(); ++i) 
+		cout<<d[i]<<' ';
+	return 0;
+}
