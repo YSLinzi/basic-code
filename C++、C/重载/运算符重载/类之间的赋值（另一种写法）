@@ -1,0 +1,73 @@
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+class String{
+	private:
+		char* str;
+	public:
+		String():str(NULL){
+		}//构造函数，初始化str为NULL
+		const char* fun(){
+			return str;
+		}
+		//重载 = 号，使得object = "hello"能够成立 
+		char* operator=(const char*);
+		//重载 = 号，使得 object1 = object2 能够成立 
+		String& operator=(const String &s);
+		//复制构造函数 
+		String(String &s);
+		~String();
+};
+char * String::operator=(const char*s){
+	if(str)
+		delete []str;
+	if(s){//s不为NULL才会执行拷贝 
+		str = new char[strlen(s)+1];
+		strcpy(str,s);
+	}
+	else
+		str = NULL;
+	return str;
+}
+String & String::operator=(const String &s){
+	if(str == s.str)
+		return *this;
+	if(str)
+		delete []str;
+	if(s.str){
+		str = new char[strlen(s.str)+1];//'\0'
+		strcpy(str,s.str);
+	}
+	else{
+		str = NULL;
+	}
+	return *this;
+}
+String::String(String &s){
+	if(s.str){
+		str = new char[strlen(s.str)+1];
+		strcpy(str, s.str);
+	}
+	else
+		str = NULL;
+}
+String::~String(){
+	
+	if(str){
+		delete []str;
+	}
+}
+
+int main(void){
+	String s1, s2;
+	s1 = "this";
+	s2 = "that";
+	s2 = s1;
+	//String s2 = "hello";//这条语句要是不注释掉就会出错,这本身不是一个赋值语句，
+	//而是初始化语句，它需要去调用构造函数才能实现初始化的操作，而函数并没有 
+	cout<<s2.fun()<<endl;
+	String s3(s1);
+	cout<<s3.fun()<<endl;
+	return 0;	
+}
