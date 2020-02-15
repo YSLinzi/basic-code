@@ -1,0 +1,55 @@
+#include <iostream>
+using namespace std;
+
+class myclass{
+	public:
+		virtual void hello(){
+			cout<<"hello from myclass"<<endl;
+		}
+		virtual void bye(){
+			cout<<"bye from myclass"<<endl;
+		}
+};
+class son:public myclass{
+	public:
+		void hello(){//派生类和基类对象中虚函数同名同参数表的函数，不加virtual也自动成为虚函数 
+			cout<<"hello from son"<<endl;
+		}
+		son(){
+			hello();
+		}
+		~son(){
+			bye();
+		}
+};
+class grandson:public son{
+	public:
+		void hello(){
+			cout<<"hello from grandson" <<endl;
+		}
+		void bye(){
+			cout<<"bye from grandson" <<endl;
+		}
+		grandson(){
+			cout<<"constructing grandson"<<endl;
+		}
+		~grandson(){
+			cout<<"destructing grandson"<<endl;
+		}
+};
+
+int main(){
+	grandson a;//遵循继承函数的构造函数调用规则 
+	son *p;
+	p = &a;
+	p->hello();//多态
+	return 0; 
+}
+/*
+输出结果：
+        hello from son
+        constructing grandson
+        hello from grandson
+        destructing grandson
+        bye from myclass
+*/
