@@ -1,0 +1,40 @@
+#include <iostream> 
+#include <fstream>
+using namespace std;
+
+struct Student{
+	char name[20];
+	int score;
+}; 
+int main(){
+	 
+	Student s;
+	//写操作 
+	ofstream OutFile("student.dat",ios::out | ios::binary);
+	while(cin>>s.name>>s.score)
+		OutFile.write((char*)&s,sizeof(s));
+	OutFile.close();
+	//读操作 
+	ifstream inFile("student.dat",ios::in | ios::binary);
+	if(!inFile){
+		cout<<"error"<<endl;
+		return 0;
+	}
+	while(inFile.read((char*)&s, sizeof(s))){
+		int bytes = inFile.gcount();//看刚才读入多少字节 
+		cout<<s.name<<' '<<s.score<<endl;
+	}
+	inFile.close();
+	return 0;
+}
+/*
+输入： 
+	Tom 60
+	Jack 80
+	Jane 40
+	^Z(ctrl+Z 然后按回车，注意直接输入^是没有用的，一定要Ctrl键） 
+输出： 
+	Tom 60
+	Jack 80
+	Jane 40
+*/ 
