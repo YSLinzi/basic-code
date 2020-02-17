@@ -1,0 +1,27 @@
+#include <iostream> 
+#include <fstream>
+#include <cstring>
+using namespace std;
+
+struct Student{
+	char name[20];
+	int score;
+}; 
+//将student.dat文件的Jane的名字改为 Mike 
+int main(){
+	 
+	Student s;
+	//iofile既可以读，又可以写 
+	fstream iofile("student.dat", ios::in|ios::out|ios::binary);
+	if(!iofile){
+		cout<<"error";
+		return 0;
+	}
+	iofile.seekp(2*sizeof(s), ios::beg);//定位写指针到第三个记录 
+	iofile.write("Mike",strlen("Mike")+1);
+	iofile.seekg(0,ios::beg);//定位读指针到开头
+	while(iofile.read((char*)&s, sizeof(s))) 
+		cout<<s.name<<" "<<s.score<<endl;
+	iofile.close();
+	return 0;
+}
