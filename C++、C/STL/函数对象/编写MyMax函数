@@ -1,0 +1,33 @@
+#include <iostream> 
+using namespace std;
+
+class MyLess{
+	public:
+		bool operator()(int a1, int a2){
+			if((a1%10)<(a2%10))
+				return true;
+			else
+				return false;
+		}
+};
+bool MyCompare(int a1,int a2){
+	if((a1%10)<(a2%10))
+		return false;
+	else
+		return true;
+}
+template <class T,class Pred>
+T MyMax(T first, T last, Pred fun){
+	T temp = first;//temp临时存储最大值 
+	for(; first != last; ++first){
+		if(fun(*temp, *first))
+			temp = first;
+	}
+	return temp;
+}
+int main(){
+	int a[] = {35,7,13,19,12};
+	cout<<*MyMax(a,a+5,MyLess())<<endl;
+	cout<<*MyMax(a,a+5,MyCompare)<<endl;
+	return 0;
+}
