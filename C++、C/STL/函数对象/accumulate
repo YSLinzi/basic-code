@@ -1,0 +1,50 @@
+#include <iostream>
+#include <algorithm>
+#include <vector>
+using namespace std;
+
+int SumSquare(int total,int value){
+	return total+value*value;
+}
+template <class T>
+void Print(T first,T last){//输出区间[first,last)中的元素 
+	for(; first != last; ++first){
+		cout<<*first<<" ";
+	}
+	cout<<endl;
+}
+template<class T>
+class SumPowers{
+	private:
+		int power;
+	public:
+		SumPowers(int p):power(p){//构造函数 
+		}
+		const T operator()(const T &total, const T &value){
+			//计算value 的 power次方，加到 total上 
+			T v = value;
+			for(int i = 0; i<power-1; ++i)
+				v = v*value;
+			return total+v;
+		}
+};
+int main(){
+	const int size=10;
+	int arr[] = {1,2,3,4,5,6,7,8,9,10};
+	vector<int>v(arr, arr+size);
+	cout<<"1)";
+	Print(v.begin(),v.end());
+	int result = accumulate(v.begin(), v.end(), 0, SumSquare);
+	cout<<"2)平方和: "<<result<<endl;
+	result = accumulate(v.begin(),v.end(), 0, SumPowers<int>(3));//SumPowers是类模板的名字，SumPowers<int>是模板类的名字 ，SumPowers<int>(3)是一个对象 
+	cout<<"3）立方和："<<result<<endl;
+	result = accumulate(v.begin(), v.end(), 0, SumPowers<int>(4));
+	cout<<"4) 4次方和："<<result;
+	return 0;
+}
+/* 输出结果： 
+1)1 2 3 4 5 6 7 8 9 10
+2)平方和: 385
+3）立方和：3025
+4) 4次方和：25333
+*/
