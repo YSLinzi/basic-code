@@ -1,0 +1,28 @@
+#include <iostream> 
+#include <list>
+using namespace std;
+
+class MyLess{
+	public:
+		bool operator()(const int&c1, const int &c2){
+			return (c1%10)<(c2%10);//按照个位数从小到大排序 
+		}
+};
+template <class T>
+void Print(T first, T last){
+	for(; first != last; ++first){
+		cout<<*first<<",";
+	}
+}
+int main(){
+	const int size = 5;
+	int a[size] = {5,21,14,2,3};
+	list<int>lst(a, a+size);
+	lst.sort(MyLess());
+	Print(lst.begin(), lst.end());
+	cout<<endl;
+	lst.sort(greater<int>());//从大到小排序 
+	Print(lst.begin(),lst.end());
+	cout<<endl;
+	return 0;
+}
