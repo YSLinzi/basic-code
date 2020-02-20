@@ -1,0 +1,72 @@
+#include <iostream>
+#include <map>
+#include <string>
+using namespace std;
+
+class Cstudent{
+	public:
+		struct Cinfo{
+			int id;
+			string name;
+		};
+		int score;
+		Cinfo other;//学生的其他信息 
+};
+typedef multimap<int,Cstudent::Cinfo> MMap;
+
+int main(){
+	MMap mp;
+	Cstudent st;
+	string a;
+	while(cin>>a){
+		if(a == "Add"){
+			cin>>st.other.name>>st.other.id>>st.score;
+			mp.insert(MMap::value_type(st.score,st.other));
+		}
+		else if(a == "Query"){
+			int score;
+			cin>>score;
+			MMap::iterator p = mp.lower_bound(score);
+			if(p != mp.begin()){
+				--p;
+				score = p->first;
+				MMap::iterator maxp = p;
+				int mId = p->second.id;
+				for(; p!=mp.begin()&& p->first==score; --p){
+					if(p->second.id > mId){
+						maxp = p;
+						mId = p->second.id;
+					}
+				}
+				if(p->first == score){
+					if(p->second.id > mId){
+						maxp = p;
+						mId = p->second.id;
+					}
+				}
+				cout<<maxp->second.name<<" "<<maxp->second.id<<" "<<maxp->first<<endl;
+			}
+			else
+				cout<<"Nobody"<<endl;
+		}
+	}
+	return 0;
+}
+/*输入：
+      Add Jack 12 78
+      Query 78
+      Query 81
+      Add Percy 9 81
+      Add Marry 8 81
+      Query 82
+      Add Tom 11 79
+      Query 80
+      Query 82
+ 输出：
+       Nobody
+      Jack 12 78
+      Percy 9 81
+      Tom 11 79
+      Percy 9 81
+*/
+      
