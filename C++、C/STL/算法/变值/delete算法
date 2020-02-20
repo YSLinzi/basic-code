@@ -1,0 +1,24 @@
+#include <iostream>
+#include <vector>
+#include <iterator>
+#include <algorithm>
+using namespace std;
+
+int main(){
+	int a[] = {1,2,3,2,5};
+	int b[] = {1,2,3,2,5,6};
+	ostream_iterator<int> output(cout,",");
+	int *p = remove(a,a+5,2);
+	cout<<"1)";
+	copy(a, a+5,output);//1,3,5,2,5
+	cout<<endl;
+	cout<<"2)"<<p-a<<endl;//2) 3(删去后剩下还有几个） p 会指向 2所在当前序列2所在的位置
+	vector<int> v(b,b+6);
+	remove(v.begin(),v.end(),2);
+	cout<<"3)";
+	copy(v.begin(),v.end(),output);//3)1,3,5,6,5,6,
+	cout<<endl;
+	cout<<"4)";
+	cout<<v.size()<<endl;//4)6 (v中的元素并没有减少） 
+	return 0;
+}
