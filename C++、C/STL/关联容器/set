@@ -1,0 +1,23 @@
+#include <iostream>
+#include <set> 
+using namespace std;
+
+int main(){
+	typedef set<int>::iterator IT;//set和multiset的区别是：插入set中已有的元素时，忽略插入 
+	int arr[5] = {3,4,6,1,2};
+	set<int> val(arr,arr+5);
+	pair<IT,bool>rel;
+	rel = val.insert(5);
+	if(rel.second){
+		cout<<*rel.first<<" inserted"<<endl;//5 inserted
+	}
+	if(val.insert(5).second){
+		cout<<*rel.first<<endl;
+	}
+	else{
+		cout<<*rel.first<<" already exist"<<endl;// 5 already exist
+	}
+	pair<IT,IT>bounds = val.equal_range(4);
+	cout<<*bounds.first<<","<<*bounds.second;// 4,5
+	return 0;
+}
