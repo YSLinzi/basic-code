@@ -1,0 +1,36 @@
+#include <iostream>
+#include <map>
+using namespace std;
+
+template <class key, class value>
+ostream& operator<<(ostream&obj, const pair<key,value>&p){
+	obj<<"("<<p.first<<","<<p.second<<")";
+	return obj;
+}
+int main(void){
+	typedef map<int,double> Map;
+	Map pairs;
+	cout<<"1)"<<pairs.count(15)<<endl;
+	pairs.insert(Map::value_type(15,2.7));
+	pairs.insert(make_pair(15, 99.3));
+	cout<<"2)"<<pairs.count(15)<<endl;
+	pairs.insert(Map::value_type(20, 9.3));
+	Map::iterator i;
+	cout<<"3)";
+	for(i = pairs.begin(); i!=pairs.end(); i++){
+		cout<<*i<<",";
+	}
+	cout<<endl;
+	cout<<"4)";
+	int n = pairs[40];//如果没有关键字为40的元素，则插入一个 
+	for(i = pairs.begin(); i!= pairs.end(); i++){
+		cout<<*i<<",";
+	}
+	cout<<endl;
+	cout<<"5)";
+	pairs[15] = 6.28;
+	for(i = pairs.begin(); i!= pairs.end(); i++){
+		cout<<*i<<",";
+	}
+	return 0;
+}
