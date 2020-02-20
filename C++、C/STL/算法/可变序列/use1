@@ -1,0 +1,46 @@
+#include <iostream> 
+#include <vector>
+#include <iterator>
+#include <algorithm>
+using namespace std;
+
+class judge{
+	public:
+		bool operator()(int n){
+			return n<9;
+		}
+};
+void Square(int num){
+	cout<<num*num<<' ';
+}
+int Cube(int num){
+	return num*num*num;
+}
+int main(){
+	const int size = 10;
+	int arr1[] = {1,2,3,4,5,6,7,8,9,10};
+	int arr2[] = {100,2,8,1,50,3,8,9,10,2};
+	vector<int> v(arr1,arr1+size);
+	ostream_iterator<int> output(cout," ");//每输出完一个整数都要加一个空格 
+	random_shuffle(v.begin(),v.end());//随机打乱数字的顺序 
+	cout<<"1)";
+	copy(v.begin(), v.end(),output);//1)9 2 10 3 1 6 8 4 5 7
+	copy(arr2,arr2+size, v.begin());//把arr2copy给 v, 要求copy的位置后面要有足够的空间 
+	cout<<endl<<"2)";
+	cout<<count(v.begin(),v.end(),8);//2)2
+	cout<<endl<<"3)";
+	cout<<count_if(v.begin(),v.end(),judge());//3)6
+	cout<<endl<<"4)";
+	cout<<*(min_element(v.begin(),v.end()));//4)1
+	cout<<endl<<"5)";
+	cout<<*(max_element(v.begin(),v.end()));//5)100
+	cout<<endl<<"6)";
+	cout<<accumulate(v.begin(),v.end(),0);//求和 6)193 
+	cout<<endl<<"7)";
+	for_each(v.begin(),v.end(),Square);//7)10000 4 64 1 2500 9 64 81 100 4
+	vector<int> cubes(size);
+	transform(arr1, arr1+size, cubes.begin(), Cube);//把arr1里面的每个元素的立方放到 cubes.begin()开始的往后的空间里面 
+	cout<<endl<<"8)";
+	copy(cubes.begin(),cubes.end(),output);//8)1 8 27 64 125 216 343 512 729 1000
+	return 0;
+}
