@@ -1,0 +1,18 @@
+#include <iostream>
+#include <map>
+using namespace std;
+
+int main(void){
+	typedef multimap<int,double> mmap;
+	mmap pairs;
+	cout<<"1)"<<pairs.count(15)<<endl;// 0
+	pairs.insert(mmap::value_type(15,2.7));
+	pairs.insert(mmap::value_type(15,99.3));
+	cout<<"2)"<<pairs.count(15)<<endl;// 2
+	pairs.insert(mmap::value_type(30,111.1));
+	pairs.insert(mmap::value_type(10,22.2));
+	for(mmap::const_iterator i = pairs.begin(); i!=pairs.end(); i++){
+		cout<<"("<<i->first<<","<<i->second<<")"<<",";//(10,22.2),(15,2.7),(15,99.3),(30,111.1),
+	}
+	return 0;
+}
