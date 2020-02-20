@@ -1,0 +1,26 @@
+#include <iostream>
+#include <queue>
+using namespace std;
+
+int main(void){
+	priority_queue<double> q;
+	q.push(3.2);
+	q.push(9.8);
+	q.push(9.8);
+	q.push(5.4);
+	while( !q.empty()){
+		cout<<q.top()<<" ";
+		q.pop();//9.8 9.8 5.4 3.2
+	}
+	cout<<endl;
+	priority_queue<double,vector<double>,greater<double> >p;
+	p.push(3.2);
+	p.push(9.8);
+	p.push(9.8);
+	p.push(5.4);
+	while(!p.empty()){
+		cout<<p.top()<<" ";
+		p.pop();// 3.2 5.4 9.8 9.8
+	}
+	return 0;
+}
