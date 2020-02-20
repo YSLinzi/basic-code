@@ -1,0 +1,64 @@
+#include <iostream>
+#include <set> 
+using namespace std;
+
+template <class T>
+void Print(T first, T last){
+	for(; first != last; ++first){
+		cout<<*first<<" ";
+	}
+	cout<<endl;
+}
+class A{
+	private:
+		int n;
+	public:
+		A(int num){
+			n = num;
+		}
+		friend bool operator<(const A&a1, const A&a2){
+			return a1.n<a2.n;
+		}
+		friend ostream& operator<<(ostream &val,const A&a2){
+			val<<a2.n;
+			return val;
+		}
+		friend class MyLess;
+};
+class MyLess{
+	public:
+		bool operator()(const A& a1, const A &a2){
+			return (a1.n%10)<(a2.n%10);
+		}
+};
+typedef multiset<A> Mul1;//Mul1用 < 比较大小
+typedef multiset<A,MyLess>Mul2;//Mul2用 MyLess::operator()比较大小
+ 
+int main(void){
+	const int size = 6;
+	A arr[size] = {4,22,19,8,33,40};
+	Mul1 m;
+	m.insert(arr,arr+size);
+	Print(m.begin(),m.end());//4 8 19 22 33 40,插入时已经排好序了 
+	m.insert(22);
+	cout<<"1)"<<m.count(22)<<endl;//1) 2
+	cout<<"2)";
+	Print(m.begin(),m.end());//2) 4 8 19 22 22 33 40
+	Mul1::iterator p = m.find(19);
+	if(p != m.end()){
+		cout<<"found"<<endl;//条件为真，说明找到 
+	}
+	cout<<"3)";
+	cout<<*m.lower_bound(22)<<","<<*m.upper_bound(22)<<endl;// 22 33
+	p = m.erase(m.lower_bound(22), m.upper_bound(22));
+	cout<<"4)";
+	Print(m.begin(),m.end());//4)4 8 19 33 40
+	cout<<"5)";
+	cout<<*p<<endl;//p指向被删除元素的下一个元素,所以输出33 
+	
+	Mul2 q;
+	q.insert(arr,arr+size);
+	cout<<"6)";
+	Print(q.begin(),q.end());//6)40 22 33 4 8 19
+	return 0;	
+}
