@@ -1,0 +1,332 @@
+//动态顺序树 
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+#define black 0
+#define red 1
+typedef struct OSnode{
+	int key;
+	int size;
+	bool color;
+	OSnode *parent;
+	OSnode *left;
+	OSnode *right;
+}OSnode;
+typedef struct OStree{
+	OSnode *root;
+}OStree;
+OSnode nill = {-1,0,black,NULL,NULL,NULL};
+OSnode *pnill = &nill;
+
+void OS_inorderwalk(OSnode *x){
+	if(x!=pnill){
+		OS_inorderwalk(x->left);
+		cout<<setw(3)<<x->key;
+		if(x->color==1){
+			cout<<"   Red     "<<x->size<<endl;
+		}
+		else{
+			cout<<"   Black   "<<x->size<<endl;
+		}
+		OS_inorderwalk(x->right);
+	}
+}
+void left_rotate(OStree *T, OSnode *x){
+	OSnode *y = x->right;
+	x->right = y->left;
+	if(y->left != pnill){
+		y->left->parent = x;
+	}
+	y->parent = x->parent;
+	if(x->parent == pnill)
+		T->root = y;
+	else if(x == x->parent->left) 
+		x->parent->left = y;
+	else
+		x->parent->right = y;
+	y->left = x;
+	x->parent = y;
+	
+	y->size = x->size;
+	x->size = x->left->size + x->right->size +1;
+}
+void right_rotate(OStree *T, OSnode *x){
+	OSnode *y = x->left;
+	x->left = y->right;
+	if(y->right != pnill)
+		y->right->parent = x; 
+	y->parent = x->parent;
+	if(y->parent == pnill){
+		T->root = y;
+	}
+	else if(x == x->parent->left)
+		x->parent->left = y;
+	else
+		x->parent->right = y;
+		
+	y->right = x;
+	x->parent = y;
+	y->size = x->size;
+	x->size = x->left->size + x->right->size +1;
+	
+}
+OS_insert_fixup(OStree *T, OSnode *z){
+	while(z->parent->color == red){
+		if(z->parent == z->parent->parent->left){
+			OSnode *y = z->parent->parent->right;
+			if(y->color == red){
+				z->parent->color = black;
+				y->color = black;
+				z->parent->parent->color = red;
+				z = z->parent->parent;
+			}
+			else{
+				if(z == z->parent->right){
+					z = z->parent;
+					left_rotate(T,z);
+				}
+				z->parent->color = black;
+				z->parent->parent->color= red;
+				right_rotate(T,z->parent->parent);
+			}
+		}
+		else{
+			OSnode *y = z->parent->parent->left;
+			if(y->color == red){
+				z->parent->color = black;
+				y->color = black;
+				z->parent->parent->color = red;
+				z = z->parent->parent;
+			}
+			else{
+				if(z == z->parent->left){
+					z = z->parent;
+					right_rotate(T,z);
+				}
+				z->parent->color = black;
+				z->parent->parent->color = red;
+				left_rotate(T,z->parent->parent);
+			}
+		}
+	}
+	T->root->color = black;
+}
+OS_insert(OStree *T, int value){
+	OSnode *z = new OSnode();
+	z->key = value;
+	z->size = 1;
+	z->color = red;
+	z->parent = pnill;
+	z->left = pnill;
+	z->right = pnill;
+	
+	OSnode *y = pnill;
+	OSnode *x = T->root;
+	while(x != pnill){
+		x->size++;
+		y = x;
+		if(z->key < x->key)
+			x = x->left;
+		else
+			x = x->right;
+	}
+	z->parent = y;
+	if(y == pnill){
+		T->root = z;
+	}
+	else if(z->key < y->key){
+		y->left = z;
+	}
+	else{
+		y->right = z;
+	}
+	OS_insert_fixup(T,z);
+}
+OSnode *OS_search(OSnode *x,int key){
+	if(x->key == key || x == pnill)
+		return x;
+	if(key<x->key)
+		OS_search(x->left,key);
+	else
+		OS_search(x->right,key);
+}
+OSnode* OS_min(OSnode *x){
+	while(x->left != pnill)
+		x = x->left;
+	return x;
+}
+OSnode *OS_successor(OSnode *x){
+	OSnode *r = x;
+	if(r->right != pnill)
+		return OS_min(r->right);
+	OSnode *y = r->parent;
+	while(y != pnill && r == y->right){
+		r = y;
+		y = y->parent;
+	}
+	return y;
+}
+
+void OS_delete_fixup(OStree *T,OSnode *x){
+	OSnode *w;
+	while(x!=T->root && x->color == black){
+		if(x == x->parent->left){
+			w = x->parent->right;
+			if(w->color == red){
+				w->color = black;
+				x->parent->color = red;
+				left_rotate(T,x->parent);
+				w = x->parent->right;
+			}
+			if(w->left->color == black && w->right->color==black){
+				w->color = red;
+				x = x->parent;
+			}
+			else{
+				if(w->right->color == black){
+					w->left->color = black;
+					w->color = red;
+					right_rotate(T,w);
+					w = x->parent->right;
+				}
+				w->color = x->parent->color;
+				x->parent->color = black;
+				w->right->color = red;
+				left_rotate(T,x->parent);
+				x = T->root;
+			}
+		}
+		else{
+			w = x->parent->left;
+			if(w->color == red){
+				w->color = black;
+				x->parent->color = red;
+				right_rotate(T,x->parent);
+				w = x->parent->left;
+			}
+			if(w->left->color == black && w->right->color == black){
+				w->color = red;
+				x = x->parent;
+			}
+			else{
+				if(w->left->color == black){
+					w->right->color = black;
+					w->color = red;
+					left_rotate(T,w);
+					w = x->parent->left;
+				}
+				w->color = x->parent->color;
+				x->parent->color = black;
+				w->left->color = black;
+				right_rotate(T,x->parent);
+				x = T->root;
+			}
+		}
+	}
+	x->color = black;
+}
+void OS_delete(OStree *T, OSnode *z){
+	OSnode *x = NULL, *y = NULL, *g = NULL;
+	if(z->left == pnill || z->right == pnill)
+		y = z;
+	else
+		y = OS_successor(z);
+		
+	g = y->parent;
+	while(g != pnill){
+		g->size--;
+		g = g->parent;
+	}
+	if(y->left != pnill)
+		x = y->left;
+	else
+		x = y->right;
+	x->parent = y->parent;
+	
+	if(y->parent == pnill)
+		T->root = x;
+	else if(y == y->parent->left)
+		y->parent->left = x;
+	else
+		y->parent->right = x;
+	
+	if(y != z)
+		z->key = y->key;
+	if(y->color==black)
+		OS_delete_fixup(T,x);
+}
+OSnode *OS_select(OSnode *x,int i){
+	if(x == pnill)
+		return x;
+	int r = x->left->size+1;
+	if(i == r)
+		return x;
+	else if(i<r)
+		return OS_select(x->left,i);
+	else
+		return OS_select(x->right,i-r);
+}
+int OS_rank(OStree *T,OSnode *x){
+	int r;
+	OSnode *y;
+	r = x->left->size+1;
+	y = x;
+	while(y!=T->root){
+		if(y == y->parent->right)
+			r+=y->parent->left->size+1;
+		y = y->parent;
+	}
+	return r;
+}
+int main(void){
+	int arr[] = {3,2,1,4,5};
+//	int arr[] = {41,38,31,12,19,8,45};
+	int n = sizeof(arr)/sizeof(int);
+	
+	OStree *T = new OStree();
+	T->root = pnill;
+	for(int i = 0; i<n; ++i){
+		OS_insert(T, arr[i]);
+	}
+	cout<<"------中序遍历的结果-------"<<endl;
+	OS_inorderwalk(T->root);
+	cout<<endl;
+	
+	cout<<"-------寻找第几小的元素-----"<<endl;
+	int num;
+	cout<<"请输入："; 
+	cin>>num;
+	OSnode *pnode = pnill;
+	pnode = OS_select(T->root,num);
+	if(pnode == pnill)
+		cout<<"寻找的元素不存在"<<endl;
+	else{
+		printf("第%d小的元素是：",num);
+		cout<<pnode->key;
+		if(pnode->color == 1)
+			cout<<"   red   ";
+		else
+			cout<<"   black  ";
+		cout<<pnode->size<<endl;
+		int rank = OS_rank(T,pnode);
+		printf("%d的rank是%d\n",pnode->key,rank);
+	}
+	
+	
+	int key;
+	cout<<"请输入要删除的值："<<endl;
+	cin>>key;
+	OSnode *del = pnill;
+	 
+	del = OS_search(T->root,key);
+	if(del == pnill){
+		cout<<"删除的元素不存在"<<endl;
+	}
+	else{
+		OS_delete(T,del);
+		cout<<"删除后，中序遍历的结果是："<<endl;
+		OS_inorderwalk(T->root);
+	}
+	return 0;
+}
