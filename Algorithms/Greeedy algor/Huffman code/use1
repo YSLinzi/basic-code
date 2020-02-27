@@ -1,0 +1,72 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+const int n = 6;
+typedef struct Node{
+	char value;//结点的字符值 
+	int weight;//结点字符出现的频率 
+	Node* lchild, *rchild;//结点的左右孩子 
+}Node;
+
+bool ComNode(Node *p, Node *q){
+	return p->weight <q->weight;
+}
+Node* Build_Huffman(vector<Node*>forest){
+	while(forest.size()>1){
+		sort(forest.begin(),forest.end(),ComNode);
+		
+		Node *first = forest[0];
+		Node *second = forest[1];
+		Node *merge = new Node;//合并上面两个树
+		merge->weight = first->weight + second->weight;
+		merge->lchild = first;
+		merge->rchild = second;
+		
+		vector<Node*>::iterator iter;
+		iter = forest.erase(forest.begin(), forest.begin()+2);
+		forest.push_back(merge);
+	}
+	return forest[0];
+}
+void Print_Huffman(Node* node, vector<int>str){
+	if(node->lchild == NULL && node->rchild == NULL){
+		cout<<node->value<<":";
+		for(vector<int>::iterator iter = str.begin(); iter!=str.end(); iter++){
+			cout<<*iter;
+		}
+		cout<<endl;
+		return;
+	}
+	else{
+		str.push_back(0);
+		Print_Huffman(node->lchild,str);//左子树 
+		str.pop_back();//回溯，删除刚刚加进去的 0
+		str.push_back(1);
+		Print_Huffman(node->rchild,str);
+		str.pop_back();//回溯，删除刚刚加进去的 1 
+	}
+}
+int main(){
+	cout<<"输入要编码的字符："<<endl;
+	vector<Node*>forest;
+	char ch;
+	while((ch = getchar())!='\n'){
+		if(ch == ' ')
+			continue;
+		Node *temp = new Node;
+		temp->value = ch;
+		temp->lchild = temp->rchild = NULL;
+		forest.push_back(temp);//将新插入的节点插入到容器forest中 
+	}
+	cout<<endl<<"请输入每个字符的频度："<<endl;
+	for(int i = 0; i<forest.size(); i++){
+		cin>>forest[i]->weight;
+	}
+	Node* root = Build_Huffman(forest);
+	vector<int>str;
+	cout<<endl<<"对应的Huffman编码如下："<<endl;
+	Print_Huffman(root,str);
+
+	return 0;
+}
