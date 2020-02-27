@@ -1,0 +1,320 @@
+//区间树
+#include <iostream> 
+#include <iomanip>
+using namespace std;
+
+#define black 0
+#define red 1
+
+typedef struct interval{
+	int low;
+	int high;
+}interval;
+typedef struct IntervalNode{
+	int key;
+	bool color;
+	IntervalNode *parent;
+	IntervalNode *left;
+	IntervalNode *right;
+	
+	interval Int;//存储结点区间信息
+	int  Max;//存储区间最大值 
+}Node;
+typedef struct IntervalTree{
+	Node *root;
+}Tree;
+interval Inter={-1,-1};
+Node nill = {-1,black,NULL,NULL,NULL,Inter,-1};
+Node *pnill = &nill;
+
+int GetMax(int a,int b,int c){
+	return a>b?(a>c?a:c):(b>c?b:c);
+}
+void right_rotate(Tree *T,Node *x){
+	Node *y = x->left;
+	x->left = y->right;
+	if(y->right != pnill)
+		y->right->parent = x;
+	
+	y->parent = x->parent;
+	if(x->parent == pnill)
+		T->root = y;
+	else if(x == x->parent->left)
+		x->parent->left = y;
+	else
+		x->parent->right = y;
+		
+	y->right = x;
+	x->parent = y;
+	
+	y->Max = x->Max;
+	x->Max = GetMax(x->Int.high, x->left->Max, x->right->Max);
+}
+void left_rotate(Tree *T,Node *x){
+	Node *y = x->right;
+	x->right = y->left;
+	if(y->left != pnill)
+		y->left->parent = x;
+	y->parent = x->parent;
+	if(x->parent == pnill)
+		T->root = y;
+	else if(x == x->parent->left)
+		x->parent->left = y;
+	else
+		x->parent->right = y;
+	
+	y->left = x;
+	x->parent = y;
+	
+	y->Max = x->Max;
+	x->Max = GetMax(x->Int.high, x->left->Max, x->right->Max);
+}
+void Interval_fixup(Tree *T,Node* z){
+	while(z->parent->color == red){
+		if(z->parent == z->parent->parent->left){
+			Node *y = z->parent->parent->right;
+			if(y->color == red){
+				z->parent->color = black;
+				y->color = black;
+				z->parent->parent->color = red;
+				z = z->parent->parent;
+			}
+			else{
+				if(z == z->parent->right){
+					z = z->parent;
+					left_rotate(T,z);
+				}
+				z->parent->color = black;
+				z->parent->parent->color = red;
+				right_rotate(T,z->parent->parent);
+			}
+		}
+		else{
+			Node *y = z->parent->parent->left;
+			if(y->color == red){
+				z->parent->color = black;
+				y->color = black;
+				z->parent->parent->color = red;
+				z = z->parent->parent;
+			}
+			else{
+				if(z == z->parent->left){
+					z = z->parent;
+					right_rotate(T,z);
+				}
+				z->parent->color = black;
+				z->parent->parent->color = red;
+				left_rotate(T,z->parent->parent);
+			}
+		}
+	}
+	T->root->color = black;
+}
+void Interval_insert(Tree *T,interval v){
+	Node *z = new Node();
+	z->key = v.low;//每个结点的关键字为区间的低端点的 
+	z->Max = v.high;//Max值为以z为根的子树中所有区间的端点的最大值 
+	z->Int = v;
+	z->color = red;
+	z->parent = pnill;
+	z->left = pnill;
+	z->right = pnill;
+	
+	Node *y = pnill;
+	Node *x = T->root;
+	while(x != pnill){//找到结点z要插入的位置 
+		x->Max = max(x->Max,z->Max);//比较新插入节点的 z 与 x节点的Max大小 
+		y = x;
+		if(z->key<x->key)//比较关键字大小 
+			x = x->left;
+		else
+			x = x->right;
+	}
+	z->parent = y;
+	if(y == pnill)
+		T->root = z;
+	else if(z->key < y->key)
+		y->left = z;
+	else
+		y->right = z;
+	Interval_fixup(T,z);
+}
+void Interval_inorderwalk(Node *x){
+	if(x != pnill){
+		Interval_inorderwalk(x->left);
+		cout<<"["<<setw(3)<<x->Int.low<<setw(3)<<x->Int.high<<"  ]";
+		if(x->color ==1)
+			cout<<"   red    "<<x->Max<<endl;
+		else
+			cout<<"   black  "<<x->Max<<endl;
+		Interval_inorderwalk(x->right);
+	}
+}
+bool Overlap(interval a,interval b){
+	if(a.high<b.low || a.low > b.high)
+		return 0;
+	return 1;
+}
+Node *Interval_search(Tree *T, interval i){
+	Node *x = T->root;
+	while(x != pnill && !Overlap(i,x->Int)){
+		if(x->left != pnill && x->left->Max >= i.low)
+			x = x->left;
+		else
+			x = x->right;
+	}
+	return x;
+}
+Node *Tree_min(Node *T){
+	while(T->left != pnill){
+		T = T->left;
+	}
+	return T;
+}
+void transplant(Tree *T, Node *u, Node *v){
+	if(u->parent == pnill ){
+		T->root = v;
+	}
+	else if(u == u->parent->left)
+		u->parent->left = v;
+	else 
+		u->parent->right = v;
+	v->parent = u->parent;
+}
+void Interval_delete_fixup(Tree *T, Node *x){
+	Node *w;
+	while(x != T->root && x->color == black){
+		if(x == x->parent->left){
+			w = x->parent->right;
+			if(w->color == red){
+				w->color = black;
+				x->parent->color = red;
+				left_rotate(T,x->parent);
+				w = x->parent->right;
+			}
+			if(w->left->color == black && w->right->color == black){
+				w->color = red;
+				x = x->parent;
+			}
+			else{
+				if(w->right->color == black){
+					w->left->color = black;
+					w->color = red;
+					right_rotate(T,w);
+					w = x->parent->right;
+				}
+				w->color = x->parent->color;
+				x->parent->color = black;
+				w->right->color = black;
+				left_rotate(T,x->parent);
+				x = T->root;
+			}
+		}
+		else{
+			w = x->parent->left;
+			if(w->color == red){
+				w->color = black;
+				x->parent->color = red;
+				right_rotate(T,x->parent);
+				w = x->parent->left;
+			}
+			if(w->left->color== black && w->right->color == black){
+				w->color = red;
+				x = x->parent;
+			}
+			else{
+				if(w->left->color == black){
+					w->right->color = black;
+					w->color = red;
+					left_rotate(T,w);
+					w = x->parent->left;
+				}
+				w->color = x->parent->color;
+				x->parent->color = black;
+				w->left->color = black;
+				right_rotate(T,x->parent);
+				x = T->root;
+			}
+		}
+	}
+	x->color = black;
+}
+void Interval_delete(Tree *T, Node *z){
+	Node *x = NULL,*y = z, *temp = y->parent;
+	int orig_color = y->color;
+	if(z->left == pnill){
+		x = z->right;
+		transplant(T, z,z->right);
+	}
+	else if(z->right == pnill){
+		x = z->left;
+		transplant(T, z, z->left);
+	}
+	else{
+		y = Tree_min(z->right);//找到后继 y
+		temp = y->parent;
+		orig_color = y->color;//记录下 y 转移前的颜色
+		x = y->right;
+		if(y->parent == z) 
+			x->parent = y;
+		else{
+			transplant(T, y, y->right);//用y的右子树代替 y 的位置 
+			y->right = z->right;
+			y->right->parent = y;
+		}
+		transplant(T,z,y);
+		y->left = z->left;
+		y->left->parent = y;
+		y->color = z->color;//把y的颜色改为z的颜色 	
+	}
+	while(temp != pnill){
+		temp->Max = GetMax(temp->left->Max, temp->right->Max, temp->Int.high);
+		temp = temp->parent;
+	}
+	if(orig_color == black)
+		Interval_delete_fixup(T,x);
+}
+int main(){
+	interval arr[] = {{16,21},{8,9},{25,30},{5,8},{15,23},{17,19},{26,26},{0,3},{6,10},{19,20}};
+	int n = sizeof(arr)/sizeof(interval);
+	
+	Tree *T = new Tree();
+	T->root = pnill;
+	for(int i = 0; i<n; ++i)
+		Interval_insert(T,arr[i]);
+	cout<<"-----中序遍历-----"<<endl;
+	Interval_inorderwalk(T->root);
+	
+	cout<<"-----树的寻找-----"<<endl;
+	interval range;
+	cout<<"请输入要查找的区间：";
+	cin>>range.low>>range.high;
+	Node *prange = pnill;
+	prange = Interval_search(T,range);
+	if(prange == pnill)
+		cout<<"寻找的区间不存在"<<endl;
+	else{
+		cout<<"寻找的区间的位置是："<<endl;
+		cout<<"["<<prange->Int.low<<"  "<<prange->Int.high<<"]";
+		if(prange->color== 1)
+			cout<<"  red     ";
+		else
+			cout<<"  black   ";
+		cout<<prange->Max<<endl;
+	}
+	
+	cout<<"------删除------"<<endl;
+	interval dInt;
+	cout<<"请输入要删除的区间：";
+	cin>>dInt.low>>dInt.high;
+	Node* pdInt = pnill;
+	pdInt = Interval_search(T,dInt);
+	if(pdInt == pnill)
+		cout<<"删除的区间不存在"<<endl;
+	else{
+		Interval_delete(T,pdInt);
+		cout<<"删除后，中序遍历"<<endl;
+		Interval_inorderwalk(T->root);
+	}
+	return 0;
+}
