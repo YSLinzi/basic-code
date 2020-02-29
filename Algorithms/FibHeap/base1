@@ -1,0 +1,508 @@
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include <cstdlib>
+using namespace std;
+
+int a[] = {12,7,25,28,33,41,1};
+int b[] = {18,35,20,42,9,31,23,6,48,11,24,52,13,2};
+template<class T>
+class FibNode{
+	public:
+		T key;//比较节点的大小 
+		int degree;//记录节点的度 
+		FibNode<T>*left;//左兄弟 
+		FibNode<T>*right;//右兄弟 
+		FibNode<T>*child;//第一个孩子节点 
+		FibNode<T>*parent;
+		bool marked;//是否被删除第一个孩子 
+		
+		FibNode(T value):key(value),degree(0),marked(false),left(NULL),right(NULL),child(NULL),parent(NULL){
+			key = value;
+			degree = 0;
+			marked = false;
+			left = this;
+			right = this;
+			parent = NULL;
+			child = NULL;
+		}
+};
+template <class T>
+class FibHeap{
+	private:
+		int num;//堆中节点的总数 
+		int Max;//最大度 
+		FibNode<T> *min;//最小节点（某个堆的最小根节点） 
+		FibNode<T> **cons;//最大度的内存区域 
+	public:
+		FibHeap();//构造函数 
+		~FibHeap();
+		
+		void insert(T key);
+		void removeMin();//移除堆中的最小节点
+		void combine(FibHeap<T>*other);
+		bool minium(T *pkey);//获取堆中的最小键的值，保存到pkey中；成功返回true,否则返回false
+		void update(T okey, T nkey);
+		void remove(T key);
+		bool contains(T key);
+		void print();
+
+		void destory();
+	private:
+		void removeNode(FibNode<T>*node);//将 node 从双链表中移除
+		void addNode(FibNode<T>*node,FibNode<T> *root);//将 node堆节点加入root节点之前
+		
+		void insert(FibNode <T> *node);//将节点加入到斐波那契堆中
+		 
+		FibNode<T>* extractMin();//将堆中的最小节点从根链表中删除
+		void link(FibNode<T>*node, FibNode<T>* root);//将node节点链接到 root节点 
+		void makeCons();//创建 condolidate 空间
+		void consolidate();//合并堆的根链表中左右度数相同的树
+		void catList(FibNode<T> *a, FibNode<T> *b);
+		void decrease(FibNode<T>*node, T key);
+		void renewDegree(FibNode<T>*parent, int degree);
+		void cut(FibNode<T>* node, FibNode<T>*parent);
+		void cascadingCut(FibNode<T>*node);//级联剪枝
+		void update(FibNode<T>*node, T key);
+		void increase(FibNode<T>*node, T key); 
+		FibNode<T>* search(FibNode<T>*root, T key);//在最小堆root中寻找值为 key 的节点
+		FibNode<T>* search(T key);//在斐波那契堆中寻找值为 key 的节点 
+		void remove(FibNode<T> *node);
+		void print(FibNode<T>*node, FibNode<T>*prev, int direction);
+		
+};
+//构造函数 
+template <class T>
+FibHeap<T>::FibHeap(){
+	num = 0;
+	Max = 0;
+	min = NULL;
+	cons = NULL;
+}
+//析构函数 
+template<class T>
+FibHeap<T>::~FibHeap(){
+}
+
+template <class T>
+void FibHeap<T>::removeNode(FibNode<T>*node){
+	node->left->right = node->right;
+	node->right->left = node->left;
+}
+/*
+将node堆节点插入到 root 节点之前（循环链表之中） 
+*/
+template <class T>
+void FibHeap<T>::addNode(FibNode<T>*node,FibNode<T>*root){
+	node->left = root->left;
+	root->left->right = node;
+	root->left = node;
+	node->right = root;
+}
+/*
+将节点node 插入到斐波那契堆中 
+*/
+template <class T>
+void FibHeap<T>::insert(FibNode <T> *node){
+	if(num == 0)
+		min = node;
+	else{
+		addNode(node, min);
+		if(node->key < min->key)
+			min = node;
+	}
+	num++;
+}
+/*
+将堆的最小节点从根链表中移除 
+*/
+template <class T>
+FibNode<T>* FibHeap<T>::extractMin(){
+	FibNode<T> *p = min;
+	if(p == p->right)
+		min = NULL;
+	else{
+		removeNode(p);
+		min = p->right;
+	}
+	p->left = p->right = p;
+	return p;
+}
+/*
+将node 链接到 root 根节点 
+*/
+template <class T>
+void FibHeap<T>::link(FibNode<T>* node, FibNode<T>* root){
+	removeNode(node);//将node 从双链表中删除
+	if(root->child == NULL)
+		root->child = node;
+	else
+		addNode(node, root->child);
+	
+	node->parent=root;
+	root->degree++;
+	node->marked=false;
+}
+//创建 consolidate 所需要的空间
+template <class T>
+void FibHeap<T>::makeCons(){
+	int old = Max;
+	Max = (log(num)/log(2.0))+1;//+1的原因是意味着要向上取整 
+	if(old>=Max)
+		return;
+	cons=(FibNode<T>**)realloc(cons,sizeof(FibHeap<T>*)*(Max+1));// 因为度为maxDegree可能被合并，所以要maxDegree+1
+}
+//合并斐波那契堆的根链表中左右相同度数的树
+template <class T>
+void FibHeap<T>::consolidate(){
+	int i,d,D;
+	FibNode<T>*x, *y, *temp;
+	
+	makeCons();//开辟哈希所用的空间
+	D = Max+1;
+	
+	for(i = 0; i<D; i++) 
+		cons[i] = NULL;
+	while(min != NULL){
+		x = extractMin();//取出堆中的最小树（最小节点所在的树）
+		d = x->degree;//获取最小树的度数 
+		while(cons[d]!=NULL){
+			y = cons[d];
+			if(x->key>y->key)
+				swap(x,y);
+			link(y,x);//把 y 链接到 x 中 
+			cons[d] = NULL;
+			d++;
+		}
+		cons[d] = x;
+	}
+	min = NULL;
+	//把cons中节点重新加到根链表中 
+	for(i = 0; i<D; i++){
+		if(cons[i] !=NULL){
+			if(min == NULL)
+				min = cons[i];
+			else{
+				addNode(cons[i],min);
+				if(cons[i]->key < min->key)
+					min = cons[i];
+			}
+		}
+	}
+}
+/*
+移除最小的节点 
+*/
+template <class T>
+void FibHeap<T>::removeMin(){
+	if(min == NULL)
+		return;
+	FibNode<T>*child = NULL;
+	FibNode<T>*m = min;//将min的每一个儿子都添加到 斐波那契堆的根链表当中
+	while(m->child != NULL){
+		child = m->child;
+		removeNode(child);
+		if(child->right == child)
+			m->child = NULL;
+		else
+			m->child = child->right;
+	}
+	removeNode(m);//将 m 从根链表中删除
+	//如果m 是堆中唯一的节点，则设置堆的最小节点为 NULL 
+	if(m->right==m)
+		min = NULL;
+	else{
+		min = m->right;
+		consolidate();
+	}
+	num--;
+	delete m;
+}
+template <class T>
+void FibHeap<T>::print(FibNode<T>*node, FibNode<T>*prev, int direction){
+	FibNode<T>*start = node;
+	if(node == NULL)
+		return;
+	do{
+		if(direction == 1)
+			cout<<setw(8)<<node->key<<"("<<node->degree<<") is"<<setw(3)<<prev->key<<"'s child"<<endl;
+		else
+			cout<<setw(8)<<node->key<<"("<<node->degree<<") is"<<setw(3)<<prev->key<<"'s next"<<endl;
+		if(node->child != NULL)
+			print(node->child, node, 1);
+		prev = node;
+		node = node->right;
+	}while(node != start); 
+}
+//新建值为 key 的节点，并将其插入到斐波那契堆中 
+template <class T>
+void FibHeap<T>::insert(T key){
+	FibNode<T>*node;
+	node = new FibNode<T>(key);
+	if(node == NULL)
+		return;
+	insert(node);
+}
+template <class T>
+void FibHeap<T>::print(){
+	int i = 0;
+	FibNode<T> *p;
+	if(min == NULL)
+		return;
+	cout<<"---斐波那契堆的详细信息----"<<endl;
+	p = min;
+	do{
+		i++;
+		cout<<setw(2)<<i<<". "<<setw(4)<<p->key<<"("<<p->degree<<") is root"<<endl;
+		print(p->child,p,1);
+		p = p->right;
+	}while(p != min);
+	cout<<endl;
+}
+//将双向链表 a 链接到双向链表 b 
+template <class T>
+void FibHeap<T>::catList(FibNode<T> *a, FibNode<T> *b){
+	FibNode<T> *tmp;
+	tmp = a->right;
+	a->right = b->right;
+	b->right->left = a;
+	b->right = tmp;
+	tmp->left = b;
+}
+//将other合并到堆中
+template <class T>
+void FibHeap<T>::combine(FibHeap<T> *other){
+	if(other == NULL)
+		return;
+	if(other->Max > this->Max)
+		swap(*this, *other);
+	if(this->min == NULL){//this没有最小节点 
+		this->min = other->min;
+		this->num = other->num;
+		free(other->cons);
+		delete other;
+	}
+	else if(other->min == NULL){
+		free(other->cons);
+		delete other;
+	}
+	else{
+		//将"other中根链表"添加到"this"中
+		catList(this->min, other->min);
+		if(this->min->key > other->min->key)
+			this->min = other->min;
+		this->num += other->num;
+		free(other->cons);
+		delete other;
+	}
+}
+//修改度数 
+template <class T>
+void FibHeap<T>::renewDegree(FibNode<T>*parent, int degree){
+	parent->degree -= degree;
+	if(parent->parent != NULL)
+		renewDegree(parent->parent,degree);
+}
+//将node从父节点parent的子链接中剖离出来 
+template <class T>
+void FibHeap<T>::cut(FibNode<T>* node, FibNode<T>*parent){
+	removeNode(node);
+	renewDegree(parent, node->degree);
+	//node没有兄弟
+	if(node == node->right) 
+		parent->child = NULL;
+	else
+		parent->child = node->right;
+		 
+	node->parent = NULL;
+	node->left = node->right = node;
+	node->marked = false;
+	addNode(node,min);//将 node 添加到根链表中 
+}
+//将斐波那契堆中节点 node 的值减少为 key 
+template <class T>
+void FibHeap<T>::decrease(FibNode<T>*node, T key){
+	FibNode <T> *parent;
+	if(min==NULL || node == NULL)
+		return;
+	if(key>=node->key){
+		cout<<"overlap!error!!"<<endl;
+		return;
+	}
+	node->key= key;
+	parent = node->parent;
+	if(parent!=NULL && node->key <parent->key){
+		//将node节点从父节点中剖离出来，并将 node 添加到根链表中 
+		cut(node,parent);
+		cascadingCut(parent);
+	}
+	if(node->key < min->key)
+	 	min = node;
+}
+
+//级联剪枝：如果减小后的结点破坏了最小堆性质，则把它切下来，然后再从“被切节点的父节点”到所在树根节点递归执行级联剪枝 
+template <class T>
+void FibHeap<T>::cascadingCut(FibNode<T>*node){
+	FibNode<T> *parent = node->parent;
+	if(parent != NULL){
+		if(node->marked == false)
+			node->marked = true;
+		else{
+			cut(node, parent);
+			cascadingCut(parent);
+		} 
+	}
+}
+template <class T>
+void FibHeap<T>::update(FibNode<T>*node, T key){
+	if(key<node->key)
+		decrease(node, key);
+	else if(key>node->key)
+		increase(node, key);
+	else
+		cout<<"No need to update"<<endl; 
+}
+template <class T>
+void FibHeap<T>::update(T okey, T nkey){
+	FibNode<T> *node;
+	node = search(okey);
+	if(node != NULL)
+		update(node, nkey);
+}
+//将斐波那契堆中节点的 node 的值增加到 key 
+template <class T>
+void FibHeap<T>::increase(FibNode<T>*node, T key){
+	FibNode<T> *child, *parent, *right;
+	if(min == NULL || node==NULL)
+		return;
+	if(key<=node->key){
+		cout<<"no exist"<<endl;
+		return;
+	}
+	//将 node 的每个子孙都添加到斐波那契堆中 
+	while(node->child != NULL){
+		child = node->child;
+		 removeNode(child);
+		if(child->right == child)
+		 	node->child = NULL;
+		else
+			node->child = child->right;
+		
+		addNode(child,min);//将 child 添加到根链表当中 
+		child->parent = NULL;
+	}
+	node->degree= 0;
+	node->key = key;
+	//如果node不在根链表中，则将 node 从父节点 parent 的子链接中剖离出来，并使node成为堆的根链表中的一员，然后进行级联剪切 
+	parent = node->parent;
+	if(parent != NULL){
+		cut(node, parent);
+		cascadingCut(parent);
+	}
+	//否则判断是否需要更新堆的最小节点 
+	else if(min == node){
+		right == node->right;
+		while(right != node){
+			if(node->key > right->key)
+				min = right;
+			right = right->right;
+		}
+	}
+}
+template <class T>
+FibNode<T>* FibHeap<T>::search(FibNode<T>*root, T key){
+	FibNode<T>*t = root;//临时节点
+	FibNode<T>*p = NULL;//要查找的节点
+	if(root == NULL) 
+		return root;
+	do{
+		if(t->key == key){
+			p = t;
+			break;
+		}
+		else{
+			if((p=search(t->child,key)) != NULL)
+				break;
+		}
+		t = t->right;
+	}while(t!=root);
+	return p;
+}
+template <class T>
+FibNode<T>* FibHeap<T>::search(T key){
+	if(min==NULL)
+		return NULL;
+	return search(min,key);
+}
+template <class T>
+void FibHeap<T>::remove(FibNode<T> *node){
+	T m = min->key -1;
+	decrease(node,m-1);
+	removeMin();
+}
+template <class T>
+void FibHeap<T>::remove(T key){
+	FibNode<T> *node;
+	if(min == NULL)
+		return;
+	node = search(key);
+	if(node == NULL)
+		return;
+	remove(node);
+}
+void testBasic(){
+	int i;
+	int len = sizeof(b)/sizeof(b[0]);
+	FibHeap<int>* heap=new FibHeap<int>();
+	cout<<"斐波那契堆中依次添加：";
+	for(i = 0; i<len; ++i){
+		cout<<b[i]<<" ";
+		heap->insert(b[i]);
+	}
+	cout<<endl;
+	cout<<"删除斐波那契堆的最小节点"<<endl;
+	heap->removeMin();
+	heap->print();
+	cout<<"插入50"<<endl;
+	heap->insert(50);
+	cout<<"将20减少为2"<<endl;
+	heap->update(20,2);
+	heap->print();
+	cout<<"将50增加到60"<<endl;
+	heap->update(50,60);
+	heap->print();
+	cout<<"删除18"<<endl;
+	heap->remove(18);
+	heap->print();
+}
+void testUnion(){
+	int i;
+	int alen = sizeof(a)/sizeof(a[0]);
+	int blen = sizeof(b)/sizeof(b[0]);
+	FibHeap<int>* p = new FibHeap<int>();
+	FibHeap<int>* q = new FibHeap<int>();
+	
+	cout<<"斐波那契堆a 中依次添加：";
+	for(i=0;i<alen; ++i){
+		cout<<a[i]<<" ";
+		p->insert(a[i]);
+	}
+	p->removeMin();
+	cout<<endl;
+	cout<<"斐波那契堆b 中依次添加：";
+	for(i= 0; i<blen; ++i){
+		cout<<b[i]<<" ";
+		q->insert(b[i]);
+	}
+	q->removeMin();
+	cout<<endl;
+	cout<<"a 和 b 合并之后的结果是："<<endl;
+	p->combine(q);
+	p->print();
+}
+
+int main(){
+	testBasic();//验证基本信息（“斐波那契堆的结构”）
+//	testUnion();
+	return 0; 
+}
