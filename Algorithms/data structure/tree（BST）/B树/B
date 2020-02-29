@@ -1,0 +1,302 @@
+#include <iostream>
+#include <vector>
+#define M 10
+using namespace std;
+
+int t = 3;
+typedef struct Tree_Node{
+	int n;  //当前存储在节点中的关键字数 
+	char key[M];  //M个关键字，以非降序存放 
+	bool leaf;  //TRUE:x是叶子；FALSE:x是内结点 
+	Tree_Node *child[M+1];  //指向其 n+1 个孩子的指针
+	
+	//构造函数
+	Tree_Node(int num, bool Isleaf):n(num),leaf(Isleaf){}
+	//磁盘读写操作
+	
+	void Disk_Read(){}
+	void Disk_Write(){}
+}Node;
+
+class B_tree{
+	public:
+		Node *root;
+		B_tree():root(NULL){}
+		
+		int BTree_search(Node *x,char k,Node &y);
+		void BTree_Create();//构造一棵带树结点的空树
+		void BTree_Insert_Nonfull(Node *x,char k);
+		void BTree_Insert(char k);//向T中插入关键字k
+		void BTree_Split(Node *x,int i, Node *y);//分裂，把y分裂为两个结点，选择其中一个关键字插入到x中的第i个位置
+		void BTree_Print(Node *s);	
+		void BTree_delete(Node *x, char k);
+};
+//从以root为根结点的树中寻找关键字为k的结点
+int B_tree::BTree_search(Node *root, char k, Node &y){
+	
+	int i = 1;
+	while(i< root->n && k>root->key[i])
+		i++;
+		
+	if(i<= root->n && k == root->key[i]){
+		y = *root;
+		return i;//返回第几个关键字 
+	}
+	if(root->leaf)//没找到返回空 
+		return 0;
+	
+	//若还有子树可以查找，则递归查找第 i 个子树 
+	root->child[i]->Disk_Read();
+	return BTree_search(root->child[i],k,y);
+}
+
+void B_tree::BTree_Create(){
+//初始时，根节点为叶子节点，根节点没有关键字 
+	root = new Node(0,true);
+	root->Disk_Write();
+}
+void B_tree::BTree_Split(Node *x,int i, Node *y){
+	//把y分裂成 y 和 z,因此 z 的节点属性和 y 相同，分裂前 y 有 2t-1 个关键字，分裂后前 t-1个属于y,后 t-1个属于 z,中间第 t 个属于x 
+	int j;
+	Node *z = new Node(t-1, y->leaf);
+	y->n = t-1;
+	
+	//后t-1个关键字依次复制给 z 
+	for(j = 1; j<t; ++j)
+		z->key[j] = y->key[j+t];
+	
+	if(y->leaf == false){
+		for(j = 1;j<=t;j++)
+			z->child[j] = y->child[j+t];
+	}
+	
+	for(j = x->n+1; j>i; j--)
+		x->child[j+1] = x->child[j];
+	x->child[i+1] = z;
+	
+	//把y中第 t 个关键字插入到 x 的第 i 个位置
+	for(j = x->n; j>=i; j--)
+		x->key[j+1] = x->key[j];
+	x->key[i] = y->key[t];
+	
+	x->n++;
+	y->Disk_Write();
+	z->Disk_Write();
+	x->Disk_Write();
+}
+void B_tree::BTree_Insert_Nonfull(Node *x, char k){
+	int i= x->n;
+	if(x->leaf){//如果是叶子结点 
+		while(i>=1 && k<x->key[i]){
+			x->key[i+1] = x->key[i];
+			i--;
+		}
+		x->key[i+1] = k;
+		x->n++;
+		x->Disk_Write();
+	}
+	else{
+		while(i>=1 && k<x->key[i])
+			i--;// 当整个while循环结束后，key[i]<k<key[i+1] 
+		i++;//所以要在这里将i加个一，此时：key[i-1]<k<key[i]
+		x->child[i]->Disk_Read();
+		if(x->child[i]->n == 2*t-1){
+			BTree_Split(x,i,x->child[i]);
+			if(k>x->key[i])
+				i++;
+		}
+		//孩子不满，直接插入 
+		BTree_Insert_Nonfull(x->child[i],k);
+	}
+}
+void B_tree::BTree_Insert(char k){
+	Node *r = root,*s;
+	if(r->n==2*t-1){
+		//申请一个新的节点，将新节点作为根节点 
+		root = new Tree_Node(0,false);
+		root->child[1] = r;
+		BTree_Split(root,1,r);//把根节点分裂为两个结点 
+		BTree_Insert_Nonfull(root,k);//如果根节点不满，则把关键字 k 插入到根节点中 
+	}
+	else{//若根节点不满 
+		BTree_Insert_Nonfull(r,k);
+	}
+}
+void B_tree::BTree_Print(Node *s){
+	int i;
+	for(i = 1; i<=s->n; i++){
+		if(s->leaf == false)
+			BTree_Print(s->child[i]);
+		cout<<s->key[i]<<' ';
+	}
+	if(s->leaf == false)
+		BTree_Print(s->child[s->n+1]);
+}
+void B_tree::BTree_delete(Node *x, char k){
+	int i,j;
+	//找到x 中第一个不小于 K的关键字 
+	for(i = 1; i<= x->n; i++){
+		if(x->key[i] >= k)
+			break; 
+	}
+	Node *y = x->child[i],*z = x->child[i+1],*d;
+	if(x->key[i] == k && i<= x->n){
+		//x 是叶子结点 
+		if(x->leaf == true){
+			for(j = i; j< x->n; j++)
+				x->key[j] = x->key[j+1];
+			x->n--;
+			return;
+		}
+		//case1:x中前于k的子结点y包含至少t个关键字
+		if(y->n >= t){
+			//找出k在以y为根的子树中的前驱d
+			d = y;
+			while(d->leaf == false)
+				d = d->child[d->n+1];
+			x->key[i] = d->key[d->n];
+			//递归删除 d  
+			BTree_delete(y, d->key[d->n]);
+		}
+		//case2:x是位于k之后的子节点z至少包含t个关键字
+		else if(z->n >= t){
+			d = z;
+			while(d->leaf == false)
+				d = d->child[1];
+			x->key[i] = d->key[1];
+			BTree_delete(z,d->key[1]);
+		}
+		//y和z都只有t-1个关键字，将k和z中所有关键字合并进y，使得x失去k和指向z的指针
+		else{
+			y->key[y->n+1] = k;
+			for(j = 1; j<=z->n; ++j){
+				y->key[y->n + j + 1] = z->key[j];
+			}
+			if(y->leaf == false){
+				for(j = 1; j<= z->n+1; j++){
+					y->child[y->n+j+1] = z->child[j];
+				}
+			}
+			y->n = y->n+1+z->n;
+			//将k从x中移出
+			for(j = i; j<x->n; j++){
+				x->key[j] = x->key[j+1];
+			}
+			//把指向z的指针从x->child中移出
+			for(j = i+1; j<=x->n; j++)
+				x->child[j] = x->child[j+1];
+			x->n--;
+			if(x->n == 0 && root == x)
+				root = y;
+			delete z;
+			BTree_delete(y,k);
+		}
+	}
+	//child[i]中只有t-1个关键字
+	else{
+		if(x->leaf == true){
+			cout<<"not exist"<<endl; 
+		}
+		if(y->n == t-1){
+			//它的相邻兄弟x->child[i+1](用z表示)包含至少t个关键字
+			if(i<=x->n && z->n>=t){
+				y->n++;
+				y->key[y->n] = x->key[i];
+				x->key[i] = z->key[i];
+				for(j = 1; j<z->n; j++){
+					z->key[j] = z->key[j+1];
+				}
+				if(y->leaf == false){
+					y->child[y->n+1] = z->child[1];
+					for(j = 1; j<=z->n; j++)
+						z->child[j] = z->child[j+1];
+				}
+				z->n--;
+			}
+			//它的相邻兄弟x->child[i-1]包含至少t个关键字
+			else if(i>1 && x->child[i-1]->n >= t){
+				//将x中的关键字下降至y
+				for(j = y->n; j>=1; j--){
+					y->key[j+1] = y->key[j];
+				}
+				y->key[1] = x->key[i-1];
+				y->n++;
+				//将y的相邻兄弟x->child[i-1]的某一关键字上升至x
+				x->key[i-1] = x->child[i-1]->key[x->child[i-1]->n];
+				//将该兄弟适合的子女指针移到y
+				if(y->leaf == false){
+					for(j = y->n; j>=1; j--){
+						y->child[j+1] = y->child[j];
+					}
+					y->child[1] = x->child[i-1]->child[x->child[i-1]->n+1];
+				}
+				x->child[i-1]->n--;
+			}
+			else{
+				if(i<=x->n){
+					y->key[y->n+1] = x->key[i];
+					//将z中所有关键字并入y中
+					for(j=1; j<=z->n; j++)
+						y->key[j+y->n+1] = z->key[j];
+					//如果有孩子，所有孩子也要并入
+					if(y->leaf == false){
+						for(j = 1; j<=z->n+1; j++)
+							y->child[j+y->n+1] = z->child[j];
+					}
+					y->n = y->n + 1+ z->n;
+					for(j = i; j<x->n; j++)
+						x->key[j] = x->key[j+1];
+					for(j = i+1; j<= x->n; j++)
+						x->child[j] = x->child[j+1];
+					x->n--;
+					if(x->n == 0 && root == x)
+						root = y;
+				}
+				else{
+					z = y;
+					i--;
+					y = x->child[i];
+					y->key[y->n+1] = x->key[i];
+					for(j = 1; j<=z->n; j++)
+						y->key[j+y->n+1] = z->key[j];
+					if(y->leaf == false){
+						for(j = 1; j<= z->n+1; j++)
+							y->child[j+y->n+1] = z->child[j];
+					}
+					y->n = y->n + 1 + z->n;
+					for(j = i; j<x->n;j++)
+						x->key[j] = z->key[i+1];
+					for(j = i+1; j<=x->n;j++)
+						x->child[j] = x->child[j+1];
+					x->n--;
+					if(x->n == 0 && root == x)
+						root = y;
+					}
+			}
+		}
+		BTree_delete(y,k);
+	}
+	
+}
+int main(void){
+	char c;
+	char ch[] = {'F','S','Q','K','C','L','H','T','V','W','M','R','N','P','A','B','X','Y','D','Z','E'};
+//	int n = sizeof(ch)/sizeof(char);
+	B_tree *T = new B_tree;
+	T->BTree_Create();
+	for(int i = 0; i<21; ++i){
+		T->BTree_Insert(ch[i]);
+//		T->BTree_Print(T->root); 插入测试 
+//		cout<<endl; 
+	}
+	cout<<"这棵B树升序输出的结果是："<<endl;
+	T->BTree_Print(T->root);
+	cout<<endl;
+	for(int i = 0; i<3; i++){
+		cout<<"删除测试: ";
+		cin>>c;
+		T->BTree_delete(T->root,c);
+		T->BTree_Print(T->root);
+		cout<<endl;
+	}
+}
